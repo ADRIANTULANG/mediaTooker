@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "275387188206",
+    "project_id": "media-tooker-7ec79",
+    "storage_bucket": "media-tooker-7ec79.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:275387188206:android:dba53b99fec3f45b5504ff",
+        "android_client_info": {
+          "package_name": "com.media.tooker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "275387188206-fnukapj47pbtd06ktf35u5ipra4bus39.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkgdXfBxQkRcrWqYW4dIaYAs5fzhVe-O4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "275387188206-fnukapj47pbtd06ktf35u5ipra4bus39.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
