@@ -23,6 +23,8 @@ class UsersRegistrationViewController extends GetxController {
   TextEditingController address = TextEditingController();
 
   RxString dropDownValue = 'Client'.obs;
+  RxString dropDownValueType = 'Individual'.obs;
+
   RxString filepath = ''.obs;
   RxString filename = ''.obs;
   File? filePick;
@@ -110,7 +112,10 @@ class UsersRegistrationViewController extends GetxController {
         "address": address.text,
         "isOnline": false,
         "status": "Pending",
-        "datecreated": Timestamp.now()
+        "datecreated": Timestamp.now(),
+        "accountType":
+            dropDownValue.value == "Client" ? "" : dropDownValueType.value,
+        "bio": ""
       });
     } catch (e) {
       Get.snackbar(

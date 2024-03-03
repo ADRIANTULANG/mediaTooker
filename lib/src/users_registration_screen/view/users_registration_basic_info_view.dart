@@ -95,17 +95,71 @@ class UsersRegistrationView extends GetView<UsersRegistrationViewController> {
             SizedBox(
               height: 2.h,
             ),
+            Obx(
+              () => controller.dropDownValue.value == "Client"
+                  ? const SizedBox()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                          child: Text(
+                            "Provider type",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: AppFontSizes.regular,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: .5.h,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                          child: Container(
+                            height: 7.h,
+                            width: 100.w,
+                            decoration: BoxDecoration(
+                                color: AppColors.light,
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(8)),
+                            child: Obx(
+                              () => DropdownButton<String>(
+                                value: controller.dropDownValueType.value,
+                                padding: EdgeInsets.only(
+                                    left: 5.w, right: 5.w, top: .5.h),
+                                underline: const SizedBox(),
+                                elevation: 16,
+                                isExpanded: true,
+                                onChanged: (String? value) {
+                                  controller.dropDownValueType.value = value!;
+                                },
+                                items: [
+                                  'Individual',
+                                  'Group'
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 2.h,
+                        ),
+                      ],
+                    ),
+            ),
             Padding(
               padding: EdgeInsets.only(left: 5.w, right: 5.w),
-              child: Obx(
-                () => Text(
-                  controller.dropDownValue.value == "Client"
-                      ? "Name"
-                      : "Group name",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: AppFontSizes.regular,
-                  ),
+              child: Text(
+                "Name",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: AppFontSizes.regular,
                 ),
               ),
             ),

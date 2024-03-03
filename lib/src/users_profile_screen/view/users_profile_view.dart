@@ -167,6 +167,17 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                       fontWeight: FontWeight.normal,
                                       fontSize: AppFontSizes.regular),
                                 ),
+                                Text(
+                                  controller.accountType.value == "Group"
+                                      ? "Company/Group"
+                                      : controller.accountType.value ==
+                                              "Individual"
+                                          ? "Individual/Freelancer"
+                                          : "",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: AppFontSizes.regular),
+                                ),
                               ],
                             ),
                             Get.find<StorageServices>().storage.read('id') ==
@@ -263,6 +274,57 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                       size: 23.sp,
                                     ),
                                   ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 2.h,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                        child: Text(
+                          "Bio",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: AppFontSizes.medium),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 2.h,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Obx(
+                                () => Text(
+                                  controller.bio.value.isEmpty &&
+                                          Get.find<StorageServices>()
+                                                  .storage
+                                                  .read('id') ==
+                                              controller.userid.value
+                                      ? "Describe yourself..."
+                                      : controller.bio.value,
+                                  maxLines: 6,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: AppFontSizes.regular),
+                                ),
+                              ),
+                            ),
+                            Get.find<StorageServices>().storage.read('id') ==
+                                    controller.userid.value
+                                ? GestureDetector(
+                                    onTap: () {},
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: AppColors.orange,
+                                      size: 23.sp,
+                                    ),
+                                  )
+                                : const SizedBox()
                           ],
                         ),
                       ),

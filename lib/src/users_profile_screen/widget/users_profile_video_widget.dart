@@ -37,18 +37,18 @@ class _UsersProfileVideoWidgetState extends State<UsersProfileVideoWidget> {
           SizedBox(
             height: 30.h,
             width: 100.w,
-            child: NativeVideoPlayerView(
-              onViewReady: (controller) async {
-                vController = controller;
-                final videoSource = await VideoSource.init(
-                  path: widget.url,
-                  type: VideoSourceType.network,
-                );
-                await controller.loadVideoSource(videoSource);
-                listenToController();
-                // vController!.play();
-              },
-            ),
+            // child: NativeVideoPlayerView(
+            //   onViewReady: (controller) async {
+            //     vController = controller;
+            //     final videoSource = await VideoSource.init(
+            //       path: widget.url,
+            //       type: VideoSourceType.network,
+            //     );
+            //     await controller.loadVideoSource(videoSource);
+            //     listenToController();
+            //     // vController!.play();
+            //   },
+            // ),
           ),
           Positioned(
             right: 41.w,

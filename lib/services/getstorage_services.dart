@@ -12,6 +12,7 @@ class StorageServices extends GetxController {
     required String type,
     required String provider,
     required String profilePicture,
+    required String accountType,
   }) {
     storage.write("id", id);
     storage.write("contactno", contactno);
@@ -20,6 +21,7 @@ class StorageServices extends GetxController {
     storage.write("type", type);
     storage.write("provider", provider);
     storage.write("profilePicture", profilePicture);
+    storage.write("accountType", accountType);
   }
 
   removeStorageCredentials() {
@@ -30,5 +32,6 @@ class StorageServices extends GetxController {
     storage.remove("provider");
     storage.remove("name");
     storage.remove("profilePicture");
+    storage.remove("accountType");
   }
 }

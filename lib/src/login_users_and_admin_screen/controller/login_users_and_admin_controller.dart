@@ -42,6 +42,7 @@ class LoginViewController extends GetxController {
             Get.back();
             Get.offAll(() => const UsersBottomNavView());
             Get.find<StorageServices>().saveClientCredentials(
+                accountType: userdetails[0]['accountType'],
                 profilePicture: userdetails[0]['profilePhoto'],
                 id: userdetails[0].id,
                 contactno: userdetails[0]['contactno'],
@@ -153,6 +154,7 @@ class LoginViewController extends GetxController {
           Get.back();
           Get.offAll(() => const UsersBottomNavView());
           Get.find<StorageServices>().saveClientCredentials(
+              accountType: res.docs[0]['accountType'],
               id: res.docs[0].id,
               contactno: res.docs[0]['contactno'],
               email: res.docs[0]['email'],

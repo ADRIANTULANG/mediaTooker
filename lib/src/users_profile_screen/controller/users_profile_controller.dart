@@ -23,6 +23,8 @@ class UsersProfileController extends GetxController {
   RxString address = ''.obs;
   RxString contactNo = ''.obs;
   RxString usertype = ''.obs;
+  RxString accountType = ''.obs;
+  RxString bio = ''.obs;
   RxString selectedContentView = 'Posts'.obs;
 
   RxList<Post> allPost = <Post>[].obs;
@@ -46,6 +48,8 @@ class UsersProfileController extends GetxController {
         contactNo.value = userdetails.get('contactno');
         address.value = userdetails.get('address');
         email.value = userdetails.get('email');
+        accountType.value = userdetails.get('accountType');
+        bio.value = userdetails.get('bio');
       } else {
         Get.back();
         responseMessage.value = "Sorry we cannot load the data.";
