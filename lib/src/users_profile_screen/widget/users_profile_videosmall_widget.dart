@@ -34,21 +34,21 @@ class _UsersProfileVideoSmallWidgetState
     return SizedBox(
       child: Stack(
         children: [
-          const SizedBox(
-              // child: NativeVideoPlayerView(
-              //   onViewReady: (controller) async {
-              //     vController = controller;
-              //     final videoSource = await VideoSource.init(
-              //       path: widget.url,
-              //       type: VideoSourceType.network,
-              //     );
+          SizedBox(
+            child: NativeVideoPlayerView(
+              onViewReady: (controller) async {
+                vController = controller;
+                final videoSource = await VideoSource.init(
+                  path: widget.url,
+                  type: VideoSourceType.network,
+                );
 
-              //     await controller.loadVideoSource(videoSource);
-              //     listenToController();
-              //     // vController!.play();
-              //   },
-              // ),
-              ),
+                await controller.loadVideoSource(videoSource);
+                listenToController();
+                // vController!.play();
+              },
+            ),
+          ),
           Positioned(
             right: 11.w,
             top: 5.h,

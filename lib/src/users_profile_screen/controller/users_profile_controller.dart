@@ -25,6 +25,7 @@ class UsersProfileController extends GetxController {
   RxString usertype = ''.obs;
   RxString accountType = ''.obs;
   RxString bio = ''.obs;
+  RxString rating = ''.obs;
   RxString selectedContentView = 'Posts'.obs;
 
   RxList<Post> allPost = <Post>[].obs;
@@ -50,6 +51,21 @@ class UsersProfileController extends GetxController {
         email.value = userdetails.get('email');
         accountType.value = userdetails.get('accountType');
         bio.value = userdetails.get('bio');
+        var resrating = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userid.value)
+            .collection('ratings')
+            .get();
+        if (resrating.docs.isNotEmpty) {
+          var ratings = resrating.docs;
+          double total = 0.0;
+          for (var i = 0; i < ratings.length; i++) {
+            total = total + ratings[i]['rating'];
+          }
+          rating.value = (total / ratings.length).toStringAsFixed(1);
+        } else {
+          rating.value = 0.0.toStringAsFixed(1);
+        }
       } else {
         Get.back();
         responseMessage.value = "Sorry we cannot load the data.";
@@ -177,7 +193,24 @@ class UsersProfileController extends GetxController {
       name.value = newname;
       Get.back();
     } catch (_) {
+      Get.back();
       log("ERROR: (editName) Something went wrong $_");
+    }
+  }
+
+  editBio({required String newbio}) async {
+    try {
+      Get.back();
+      LoadingDialog.showLoadingDialog();
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userid.value)
+          .update({"bio": newbio});
+      bio.value = newbio;
+      Get.back();
+    } catch (_) {
+      Get.back();
+      log("ERROR: (editBio) Something went wrong $_");
     }
   }
 
@@ -193,8 +226,56 @@ class UsersProfileController extends GetxController {
       address.value = newaddress;
       Get.back();
     } catch (_) {
+      Get.back();
       log("ERROR: (editDetails) Something went wrong $_");
     }
+  }
+
+  rateUser({required double userrating}) async {
+    try {
+      Get.back();
+      LoadingDialog.showLoadingDialog();
+      var res = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userid.value)
+          .collection('ratings')
+          .where('userid',
+              isEqualTo: Get.find<StorageServices>().storage.read('id'))
+          .get();
+      if (res.docs.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userid.value)
+            .collection('ratings')
+            .doc(res.docs[0].id)
+            .update({"rating": userrating});
+      } else {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userid.value)
+            .collection('ratings')
+            .add({
+          "userid": Get.find<StorageServices>().storage.read('id'),
+          "rating": userrating
+        });
+      }
+      Get.back();
+      var resrating = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userid.value)
+          .collection('ratings')
+          .get();
+      if (resrating.docs.isNotEmpty) {
+        var ratings = resrating.docs;
+        double total = 0.0;
+        for (var i = 0; i < ratings.length; i++) {
+          total = total + ratings[i]['rating'];
+        }
+        rating.value = (total / ratings.length).toStringAsFixed(1);
+      } else {
+        rating.value = 0.0.toStringAsFixed(1);
+      }
+    } catch (_) {}
   }
 
   callProvider() async {

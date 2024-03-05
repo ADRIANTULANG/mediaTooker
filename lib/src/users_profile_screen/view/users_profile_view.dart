@@ -155,11 +155,47 @@ class UsersProfileView extends GetView<UsersProfileController> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  controller.name.value,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: AppFontSizes.large),
+                                Obx(
+                                  () => controller.usertype.value ==
+                                          "Media Provider"
+                                      ? Row(
+                                          children: [
+                                            Text(
+                                              controller.name.value,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: AppFontSizes.large),
+                                            ),
+                                            SizedBox(
+                                              width: 3.w,
+                                            ),
+                                            Obx(
+                                              () => Text(
+                                                controller.rating.value,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize:
+                                                        AppFontSizes.medium),
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () {
+                                                UsersProfileAlertDialog
+                                                    .showRateUser();
+                                              },
+                                              child: const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                            )
+                                          ],
+                                        )
+                                      : Text(
+                                          controller.name.value,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: AppFontSizes.large),
+                                        ),
                                 ),
                                 Text(
                                   controller.email.value,
@@ -317,7 +353,10 @@ class UsersProfileView extends GetView<UsersProfileController> {
                             Get.find<StorageServices>().storage.read('id') ==
                                     controller.userid.value
                                 ? GestureDetector(
-                                    onTap: () {},
+                                    onTap: () {
+                                      UsersProfileAlertDialog.showEditBio(
+                                          oldBio: controller.bio.value);
+                                    },
                                     child: Icon(
                                       Icons.edit,
                                       color: AppColors.orange,

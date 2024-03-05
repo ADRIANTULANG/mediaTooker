@@ -38,7 +38,23 @@ class LoginViewController extends GetxController {
             .get();
         var userdetails = res.docs;
         if (userdetails.isNotEmpty) {
-          if (userdetails[0]['isApprovedByAdmin'] == true) {
+          if (userdetails[0]['isApprovedByAdmin'] == false) {
+            Get.back();
+            Get.snackbar("Message",
+                "Your account has not been validated by the admin. It will take 2 to 3 days to validate your account.",
+                duration: const Duration(seconds: 3),
+                backgroundColor: AppColors.orange,
+                colorText: Colors.white);
+            await FirebaseAuth.instance.signOut();
+          } else if (userdetails[0]['restricted'] == true) {
+            Get.back();
+            Get.snackbar("Message",
+                "Your account is restricted. Please contact admin for more support.",
+                duration: const Duration(seconds: 3),
+                backgroundColor: AppColors.orange,
+                colorText: AppColors.light);
+            await GoogleSignIn().signOut();
+          } else {
             Get.back();
             Get.offAll(() => const UsersBottomNavView());
             Get.find<StorageServices>().saveClientCredentials(
@@ -50,14 +66,6 @@ class LoginViewController extends GetxController {
                 name: userdetails[0]['name'],
                 type: userdetails[0]['usertype'],
                 provider: userdetails[0]['provider']);
-          } else {
-            Get.back();
-            Get.snackbar("Message",
-                "Your account has not been validated by the admin. It will take 2 to 3 days to validate your account.",
-                duration: const Duration(seconds: 3),
-                backgroundColor: AppColors.orange,
-                colorText: Colors.white);
-            await FirebaseAuth.instance.signOut();
           }
         } else {
           Get.back();
@@ -127,9 +135,9 @@ class LoginViewController extends GetxController {
       }
     } catch (e) {
       Get.back();
-      // Get.snackbar("Message",
-      //     "Sign in failed, something went wrong please try again later.",
-      //     backgroundColor: AppColors.orange, colorText: Colors.white);
+      Get.snackbar("Message",
+          "Sign in failed, something went wrong please try again later.",
+          backgroundColor: AppColors.orange, colorText: Colors.white);
       log(e.toString());
     }
   }
@@ -150,7 +158,23 @@ class LoginViewController extends GetxController {
           "useridFromGmail": userid
         });
       } else {
-        if (res.docs[0]['isApprovedByAdmin'] == true) {
+        if (res.docs[0]['isApprovedByAdmin'] == false) {
+          Get.back();
+          Get.snackbar("Message",
+              "Your account is still not validated. Wait for your account to be validated. It will take two to three days to validate your account.",
+              duration: const Duration(seconds: 3),
+              backgroundColor: AppColors.orange,
+              colorText: AppColors.light);
+          await GoogleSignIn().signOut();
+        } else if (res.docs[0]['restricted'] == true) {
+          Get.back();
+          Get.snackbar("Message",
+              "Your account is restricted. Please contact admin for more support.",
+              duration: const Duration(seconds: 3),
+              backgroundColor: AppColors.orange,
+              colorText: AppColors.light);
+          await GoogleSignIn().signOut();
+        } else {
           Get.back();
           Get.offAll(() => const UsersBottomNavView());
           Get.find<StorageServices>().saveClientCredentials(
@@ -162,14 +186,6 @@ class LoginViewController extends GetxController {
               profilePicture: res.docs[0]['profilePhoto'],
               type: res.docs[0]['usertype'],
               provider: res.docs[0]['provider']);
-        } else {
-          Get.back();
-          Get.snackbar("Message",
-              "Your account is still not validated. Wait for your account to be validated. It will take two to three days to validate your account.",
-              duration: const Duration(seconds: 3),
-              backgroundColor: AppColors.orange,
-              colorText: AppColors.light);
-          await GoogleSignIn().signOut();
         }
       }
     } catch (e) {

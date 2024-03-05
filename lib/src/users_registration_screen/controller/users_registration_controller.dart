@@ -115,7 +115,8 @@ class UsersRegistrationViewController extends GetxController {
         "datecreated": Timestamp.now(),
         "accountType":
             dropDownValue.value == "Client" ? "" : dropDownValueType.value,
-        "bio": ""
+        "bio": "",
+        "restricted": false
       });
     } catch (e) {
       Get.snackbar(

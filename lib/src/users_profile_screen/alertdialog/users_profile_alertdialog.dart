@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:mediatooker/config/app_fontsizes.dart';
 import 'package:mediatooker/src/users_profile_screen/controller/users_profile_controller.dart';
@@ -195,6 +198,158 @@ class UsersProfileAlertDialog {
                           }
                         },
                         child: const Text("Save"))),
+              ],
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  static showEditBio({required String oldBio}) {
+    TextEditingController bio = TextEditingController(text: oldBio);
+    var controller = Get.find<UsersProfileController>();
+    Get.dialog(AlertDialog(
+      backgroundColor: Colors.white,
+      content: SizedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 1.h,
+            ),
+            Text(
+              "Edit Bio",
+              style: TextStyle(
+                  fontSize: AppFontSizes.large, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            SizedBox(
+              height: 20.h,
+              width: 100.w,
+              child: TextField(
+                controller: bio,
+                maxLines: 15,
+                style: TextStyle(fontSize: AppFontSizes.regular),
+                decoration: InputDecoration(
+                    fillColor: AppColors.light,
+                    filled: true,
+                    contentPadding: EdgeInsets.only(left: 3.w, top: 2.h),
+                    alignLabelWithHint: false,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(2)),
+                    hintText: 'Describe your self...',
+                    hintStyle: const TextStyle(fontFamily: 'Bariol')),
+              ),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                    width: 30.w,
+                    child: ElevatedButton(
+                        style: const ButtonStyle(
+                            foregroundColor:
+                                MaterialStatePropertyAll(AppColors.orange),
+                            backgroundColor:
+                                MaterialStatePropertyAll(AppColors.light)),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text("Cancel"))),
+                SizedBox(
+                    width: 30.w,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          if (bio.text == oldBio) {
+                            Get.back();
+                          } else if (bio.text.isNotEmpty) {
+                            controller.editBio(newbio: bio.text);
+                          }
+                        },
+                        child: const Text("Save"))),
+              ],
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  static showRateUser() {
+    var controller = Get.find<UsersProfileController>();
+    double selectedRating = 3.0;
+    Get.dialog(AlertDialog(
+      backgroundColor: Colors.white,
+      content: SizedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 1.h,
+            ),
+            Text(
+              "Rating",
+              style: TextStyle(
+                  fontSize: AppFontSizes.large, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            RatingBar.builder(
+              initialRating: 3,
+              minRating: 1,
+              direction: Axis.horizontal,
+              allowHalfRating: true,
+              itemCount: 5,
+              itemPadding: const EdgeInsets.symmetric(horizontal: 3.0),
+              itemBuilder: (context, _) => const Icon(
+                Icons.star,
+                color: Colors.amber,
+              ),
+              onRatingUpdate: (rating) {
+                log(rating.toString());
+                selectedRating = rating;
+              },
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                    width: 30.w,
+                    child: ElevatedButton(
+                        style: const ButtonStyle(
+                            foregroundColor:
+                                MaterialStatePropertyAll(AppColors.orange),
+                            backgroundColor:
+                                MaterialStatePropertyAll(AppColors.light)),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text("Cancel"))),
+                SizedBox(
+                    width: 30.w,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          controller.rateUser(userrating: selectedRating);
+                        },
+                        child: const Text("Rate"))),
               ],
             ),
             SizedBox(

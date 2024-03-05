@@ -54,65 +54,95 @@ class AdminUsersListView extends GetView<AdminUsersListController> {
                         Padding(
                           padding: EdgeInsets.only(left: 5.w, right: 5.w),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              CachedNetworkImage(
-                                imageUrl:
-                                    controller.usersList[index].profilePhoto,
-                                imageBuilder: (context, imageProvider) =>
-                                    CircleAvatar(
-                                  radius: 5.5.w,
-                                  backgroundColor: AppColors.dark,
-                                  child: CircleAvatar(
-                                    radius: 5.w,
-                                    backgroundImage: imageProvider,
-                                  ),
-                                ),
-                                placeholder: (context, url) => CircleAvatar(
-                                  radius: 5.5.w,
-                                  backgroundColor: AppColors.dark,
-                                  child: CircleAvatar(
-                                    radius: 5.w,
-                                    backgroundColor: AppColors.light,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                    CircleAvatar(
-                                  radius: 5.5.w,
-                                  backgroundColor: AppColors.dark,
-                                  child: CircleAvatar(
-                                    radius: 5.w,
-                                    backgroundColor: AppColors.light,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 2.w,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Get.to(() => const UsersProfileView(),
-                                      arguments: {
-                                        "userid": controller.usersList[index].id
-                                      });
-                                },
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      controller.usersList[index].name,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: AppFontSizes.medium),
+                              Row(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: controller
+                                        .usersList[index].profilePhoto,
+                                    imageBuilder: (context, imageProvider) =>
+                                        CircleAvatar(
+                                      radius: 5.5.w,
+                                      backgroundColor: AppColors.dark,
+                                      child: CircleAvatar(
+                                        radius: 5.w,
+                                        backgroundImage: imageProvider,
+                                      ),
                                     ),
-                                    Text(
-                                      "${DateFormat.yMMMMd().format(controller.usersList[index].datecreated)} ${DateFormat.jm().format(controller.usersList[index].datecreated)}",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: AppFontSizes.small),
+                                    placeholder: (context, url) => CircleAvatar(
+                                      radius: 5.5.w,
+                                      backgroundColor: AppColors.dark,
+                                      child: CircleAvatar(
+                                        radius: 5.w,
+                                        backgroundColor: AppColors.light,
+                                      ),
                                     ),
-                                  ],
-                                ),
+                                    errorWidget: (context, url, error) =>
+                                        CircleAvatar(
+                                      radius: 5.5.w,
+                                      backgroundColor: AppColors.dark,
+                                      child: CircleAvatar(
+                                        radius: 5.w,
+                                        backgroundColor: AppColors.light,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 2.w,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Get.to(() => const UsersProfileView(),
+                                          arguments: {
+                                            "userid":
+                                                controller.usersList[index].id
+                                          });
+                                    },
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          controller.usersList[index].name,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: AppFontSizes.medium),
+                                        ),
+                                        Text(
+                                          "${DateFormat.yMMMMd().format(controller.usersList[index].datecreated)} ${DateFormat.jm().format(controller.usersList[index].datecreated)}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: AppFontSizes.small),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 3.w),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    bool boolean =
+                                        controller.usersList[index].restricted
+                                            ? false
+                                            : true;
+                                    controller.editRestriction(
+                                        docid: controller.usersList[index].id,
+                                        boolean: boolean);
+                                  },
+                                  child: controller.usersList[index].restricted
+                                      ? const Icon(
+                                          Icons.disabled_by_default_rounded,
+                                          color: Colors.red,
+                                        )
+                                      : const Icon(
+                                          Icons.check_box,
+                                          color: Colors.green,
+                                        ),
+                                ),
+                              )
                             ],
                           ),
                         ),
@@ -127,6 +157,19 @@ class AdminUsersListView extends GetView<AdminUsersListController> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Text(
+                                    controller.usersList[index].accountType ==
+                                            "Group"
+                                        ? "Company/Group"
+                                        : controller.usersList[index]
+                                                    .accountType ==
+                                                "Individual"
+                                            ? "Individual/Freelancer"
+                                            : "Client",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: AppFontSizes.regular),
+                                  ),
                                   Text(
                                     controller.usersList[index].email,
                                     style: TextStyle(

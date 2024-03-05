@@ -6,6 +6,7 @@ import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:get/get.dart';
 import 'package:mediatooker/config/app_colors.dart';
 import 'package:mediatooker/model/user_model.dart';
+import 'package:mediatooker/services/loading_dialog.dart';
 
 class AdminUsersListController extends GetxController {
   RxList<User> usersList = <User>[].obs;
@@ -50,6 +51,23 @@ class AdminUsersListController extends GetxController {
         onDownloadError: (String error) {
           usersList[index].isDownloading.value = false;
         });
+  }
+
+  editRestriction({
+    required String docid,
+    required bool boolean,
+  }) async {
+    try {
+      LoadingDialog.showLoadingDialog();
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(docid)
+          .update({"restricted": boolean});
+      Get.back();
+      getUsers();
+    } catch (_) {
+      log("ERROR: (editRestriction) Something went wrong $_");
+    }
   }
 
   @override

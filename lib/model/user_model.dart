@@ -29,6 +29,8 @@ class User {
   String status;
   String contactno;
   String id;
+  String accountType;
+  bool restricted;
   RxBool isDownloading;
   RxDouble progress;
 
@@ -51,6 +53,8 @@ class User {
     required this.id,
     required this.isDownloading,
     required this.progress,
+    required this.accountType,
+    required this.restricted,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -71,7 +75,9 @@ class User {
         email: json["email"],
         status: json["status"],
         contactno: json["contactno"],
+        restricted: json["restricted"],
         id: json["id"],
+        accountType: json["accountType"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -81,6 +87,7 @@ class User {
         "usertype": usertype,
         "isDownloading": isDownloading,
         "progress": progress,
+        "accountType": accountType,
         "isOnline": isOnline,
         "datecreated": datecreated.toIso8601String(),
         "userid": userid,
@@ -88,6 +95,7 @@ class User {
         "provider": provider,
         "name": name,
         "documentLink": documentLink,
+        "restricted": restricted,
         "fcmToken": fcmToken,
         "email": email,
         "status": status,
