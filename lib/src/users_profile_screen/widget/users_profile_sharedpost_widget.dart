@@ -7,8 +7,7 @@ import 'package:mediatooker/config/app_fontsizes.dart';
 import 'package:sizer/sizer.dart';
 import '../controller/users_profile_controller.dart';
 
-class UsersProfileSharedPostWidget
-    extends GetView<UsersProfileController> {
+class UsersProfileSharedPostWidget extends GetView<UsersProfileController> {
   const UsersProfileSharedPostWidget({super.key, required this.index});
   final int index;
   @override

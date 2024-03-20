@@ -10,6 +10,7 @@ import 'package:sizer/sizer.dart';
 import 'package:badges/badges.dart' as badges;
 import '../../../config/app_fontsizes.dart';
 import '../../users_chat_screen/view/users_chat_view.dart';
+import '../alertdialog/users_project_list_alertdialog.dart';
 import '../controller/users_project_list_controller.dart';
 
 class UsersProjectListView extends GetView<UsersProjectListController> {
@@ -158,45 +159,80 @@ class UsersProjectListView extends GetView<UsersProjectListController> {
                                   ),
                                 ],
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  Get.to(() => const UsersChatView(),
-                                      arguments: {
-                                        "userid": controller.usertype.value ==
-                                                "Client"
-                                            ? controller
-                                                .projectList[index].providerId
-                                            : controller
-                                                .projectList[index].clientId,
-                                        "projectID":
-                                            controller.projectList[index].id,
-                                        "username": controller.usertype.value ==
-                                                "Client"
-                                            ? controller
-                                                .projectList[index].providerName
-                                            : controller
-                                                .projectList[index].clientName,
-                                        "profilePic":
-                                            controller.usertype.value ==
-                                                    "Client"
-                                                ? controller.projectList[index]
-                                                    .providerProfilePic
-                                                : controller.projectList[index]
-                                                    .clientProfilePic,
-                                        "fcmToken": controller.usertype.value ==
-                                                "Client"
-                                            ? controller.projectList[index]
-                                                .providerFcmToken
-                                            : controller.projectList[index]
-                                                .clientFcmToken,
-                                      });
-                                },
-                                child: Obx(
-                                  () => badges.Badge(
-                                    position:
-                                        badges.BadgePosition.topEnd(end: -3),
-                                    showBadge:
-                                        controller.usertype.value == "Client" &&
+                              Row(
+                                children: [
+                                  controller.usertype.value == "Client" &&
+                                          controller
+                                                  .projectList[index].status ==
+                                              "Finished"
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            UsersProjectListAlertDialog
+                                                .showRateUser(
+                                                    userid: controller
+                                                        .projectList[index]
+                                                        .providerId);
+                                          },
+                                          child: Icon(
+                                            Icons.rate_review_rounded,
+                                            color: AppColors.orange,
+                                            size: 23.sp,
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                  SizedBox(
+                                    width: 3.w,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Get.to(() => const UsersChatView(),
+                                          arguments: {
+                                            "userid":
+                                                controller.usertype.value ==
+                                                        "Client"
+                                                    ? controller
+                                                        .projectList[index]
+                                                        .providerId
+                                                    : controller
+                                                        .projectList[index]
+                                                        .clientId,
+                                            "projectID": controller
+                                                .projectList[index].id,
+                                            "username":
+                                                controller.usertype.value ==
+                                                        "Client"
+                                                    ? controller
+                                                        .projectList[index]
+                                                        .providerName
+                                                    : controller
+                                                        .projectList[index]
+                                                        .clientName,
+                                            "profilePic":
+                                                controller.usertype.value ==
+                                                        "Client"
+                                                    ? controller
+                                                        .projectList[index]
+                                                        .providerProfilePic
+                                                    : controller
+                                                        .projectList[index]
+                                                        .clientProfilePic,
+                                            "fcmToken":
+                                                controller.usertype.value ==
+                                                        "Client"
+                                                    ? controller
+                                                        .projectList[index]
+                                                        .providerFcmToken
+                                                    : controller
+                                                        .projectList[index]
+                                                        .clientFcmToken,
+                                          });
+                                    },
+                                    child: Obx(
+                                      () => badges.Badge(
+                                        position: badges.BadgePosition.topEnd(
+                                            end: -3),
+                                        showBadge: controller.usertype.value ==
+                                                    "Client" &&
                                                 controller.projectList[index]
                                                     .isSeenByClient
                                             ? false
@@ -207,20 +243,22 @@ class UsersProjectListView extends GetView<UsersProjectListController> {
                                                         .isSeenByProvider
                                                 ? false
                                                 : true,
-                                    badgeContent: Text(
-                                      "!",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 7.sp,
-                                          color: AppColors.light),
-                                    ),
-                                    child: Icon(
-                                      Icons.message_rounded,
-                                      color: AppColors.orange,
-                                      size: 23.sp,
+                                        badgeContent: Text(
+                                          "!",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 7.sp,
+                                              color: AppColors.light),
+                                        ),
+                                        child: Icon(
+                                          Icons.message_rounded,
+                                          color: AppColors.orange,
+                                          size: 23.sp,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               )
                             ],
                           ),

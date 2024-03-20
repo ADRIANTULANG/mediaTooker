@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mediatooker/config/app_fontsizes.dart';
+import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/src/admin_approval_screen/controller/admin_approval_controller.dart';
+import 'package:mediatooker/src/login_users_and_admin_screen/view/login_users_and_admin_view.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../config/app_colors.dart';
+import '../../../services/loading_dialog.dart';
 
 class AdminApprovalView extends GetView<AdminApprovalController> {
   const AdminApprovalView({super.key});
@@ -23,6 +28,25 @@ class AdminApprovalView extends GetView<AdminApprovalController> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          GestureDetector(
+            onTap: () async {
+              LoadingDialog.showLoadingDialog();
+              Timer(const Duration(seconds: 3), () async {
+                Get.find<StorageServices>().removeStorageCredentials();
+                Get.offAll(() => const LoginView());
+              });
+            },
+            child: Icon(
+              Icons.power_settings_new_rounded,
+              color: AppColors.light,
+              size: 23.sp,
+            ),
+          ),
+          SizedBox(
+            width: 5.w,
+          )
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => controller.getPendingUsers(),

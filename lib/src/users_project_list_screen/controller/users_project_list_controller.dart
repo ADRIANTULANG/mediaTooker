@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mediatooker/config/app_colors.dart';
 import 'package:mediatooker/services/notification_services.dart';
 
 import '../../../model/bookings_model.dart';
@@ -168,6 +169,48 @@ class UsersProjectListController extends GetxController {
     } catch (_) {
       log("ERROR: (sendNotification) Something went wrong $_");
     }
+  }
+
+  rateUser(
+      {required double userrating,
+      required String userid,
+      required String feedback}) async {
+    try {
+      Get.back();
+      LoadingDialog.showLoadingDialog();
+      var res = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userid)
+          .collection('ratings')
+          .where('userid',
+              isEqualTo: Get.find<StorageServices>().storage.read('id'))
+          .get();
+      if (res.docs.isNotEmpty) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userid)
+            .collection('ratings')
+            .doc(res.docs[0].id)
+            .update({"rating": userrating, "feedback": feedback});
+      } else {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userid)
+            .collection('ratings')
+            .add({
+          "userid": Get.find<StorageServices>().storage.read('id'),
+          "rating": userrating,
+          "feedback": feedback,
+          "userimage":
+              Get.find<StorageServices>().storage.read('profilePicture'),
+          "username": Get.find<StorageServices>().storage.read('name'),
+          "datecreated": Timestamp.now()
+        });
+      }
+      Get.back();
+      Get.snackbar("Message", "Thank you for providing feedback and rating.",
+          backgroundColor: AppColors.orange, colorText: Colors.white);
+    } catch (_) {}
   }
 
   @override

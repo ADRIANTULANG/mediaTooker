@@ -4,8 +4,8 @@ import 'package:mediatooker/src/users_profile_screen/widget/users_profile_videos
 import 'package:sizer/sizer.dart';
 import '../controller/users_profile_controller.dart';
 
-class UsersProfileMediaWidget extends GetView<UsersProfileController> {
-  const UsersProfileMediaWidget({super.key});
+class UsersProfileVideoWidget extends GetView<UsersProfileController> {
+  const UsersProfileVideoWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +18,10 @@ class UsersProfileMediaWidget extends GetView<UsersProfileController> {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3, mainAxisSpacing: .5.h, crossAxisSpacing: 1.w),
-          itemCount: controller.mediaPost.length,
+          itemCount: controller.videoPost.length,
           itemBuilder: (BuildContext context, int index) {
             return UsersProfileVideoSmallWidget(
-                url: controller.mediaPost[index].url, index: index);
+                url: controller.videoPost[index].url, index: index);
           },
         ),
       ),

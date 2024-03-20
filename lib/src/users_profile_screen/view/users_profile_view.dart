@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mediatooker/config/app_fontsizes.dart';
 import 'package:mediatooker/services/getstorage_services.dart';
+import 'package:mediatooker/services/image_fullview.dart';
+import 'package:mediatooker/src/users_feedback_and_rating_screen/view/users_feedback_and_rating_view.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../config/app_colors.dart';
 import '../../users_book_provider_screen/view/users_book_provider_view.dart';
 import '../alertdialog/users_profile_alertdialog.dart';
 import '../controller/users_profile_controller.dart';
-import '../widget/users_profile_media_widget.dart';
+import '../widget/users_profile_image_post_widget.dart';
+import '../widget/users_profile_video_post_widget.dart';
 import '../widget/users_profile_post_widget.dart';
 
 class UsersProfileView extends GetView<UsersProfileController> {
@@ -52,6 +55,10 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                   controller.editCoverPic();
                                 }
                               },
+                              onDoubleTap: () {
+                                Get.to(() => ImageFullView(
+                                    imageUrl: controller.coverPic.value));
+                              },
                               child: Container(
                                 height: 35.h,
                                 width: 100.w,
@@ -79,6 +86,10 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                       controller.userid.value) {
                                     controller.editProfilePic();
                                   }
+                                },
+                                onDoubleTap: () {
+                                  Get.to(() => ImageFullView(
+                                      imageUrl: controller.profilePic.value));
                                 },
                                 child: CircleAvatar(
                                   radius: 15.3.w,
@@ -180,8 +191,15 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                             ),
                                             GestureDetector(
                                               onTap: () {
-                                                UsersProfileAlertDialog
-                                                    .showRateUser();
+                                                Get.to(
+                                                    () =>
+                                                        const UsersFeedbackAndRatingPage(),
+                                                    arguments: {
+                                                      "userid": controller
+                                                          .userid.value
+                                                    });
+                                                // UsersProfileAlertDialog
+                                                //     .showRateUser();
                                               },
                                               child: const Icon(
                                                 Icons.star,
@@ -415,7 +433,7 @@ class UsersProfileView extends GetView<UsersProfileController> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                controller.selectedContentView.value = "Media";
+                                controller.selectedContentView.value = "Image";
                               },
                               child: Obx(
                                 () => Container(
@@ -428,12 +446,44 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                       borderRadius: BorderRadius.circular(30),
                                       color: controller
                                                   .selectedContentView.value ==
-                                              "Media"
+                                              "Image"
                                           ? AppColors.light
                                           : null),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    "Media",
+                                    "Image",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppFontSizes.regular,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 3.w,
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                controller.selectedContentView.value = "Video";
+                              },
+                              child: Obx(
+                                () => Container(
+                                  padding: EdgeInsets.only(
+                                      top: 1.h,
+                                      bottom: 1.h,
+                                      left: 3.w,
+                                      right: 3.w),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30),
+                                      color: controller
+                                                  .selectedContentView.value ==
+                                              "Video"
+                                          ? AppColors.light
+                                          : null),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "Video",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: AppFontSizes.regular,
@@ -459,9 +509,11 @@ class UsersProfileView extends GetView<UsersProfileController> {
                       SizedBox(
                         height: 2.h,
                       ),
-                      Obx(() => controller.selectedContentView.value == "Media"
-                          ? const UsersProfileMediaWidget()
-                          : const UsersProfilePostWidget())
+                      Obx(() => controller.selectedContentView.value == "Video"
+                          ? const UsersProfileVideoWidget()
+                          : controller.selectedContentView.value == "Image"
+                              ? const UsersProfileImagePostWidget()
+                              : const UsersProfilePostWidget()),
                     ],
                   ),
                 ),

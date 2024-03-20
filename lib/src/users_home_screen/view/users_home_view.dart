@@ -217,11 +217,6 @@ class UsersHomeView extends GetView<UsersHomeViewController> {
                                         ),
                                       ],
                                     ),
-                                    Icon(
-                                      Icons.clear,
-                                      color: AppColors.dark,
-                                      size: 23.sp,
-                                    ),
                                   ],
                                 ),
                               ),

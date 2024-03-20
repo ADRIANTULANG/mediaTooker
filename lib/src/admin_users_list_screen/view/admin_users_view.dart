@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/src/admin_users_list_screen/controller/admin_users_list_controller.dart';
+import 'package:mediatooker/src/login_users_and_admin_screen/view/login_users_and_admin_view.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../config/app_colors.dart';
 import '../../../config/app_fontsizes.dart';
+import '../../../services/loading_dialog.dart';
 import '../../users_profile_screen/view/users_profile_view.dart';
 
 class AdminUsersListView extends GetView<AdminUsersListController> {
@@ -25,6 +30,25 @@ class AdminUsersListView extends GetView<AdminUsersListController> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          GestureDetector(
+            onTap: () async {
+              LoadingDialog.showLoadingDialog();
+              Timer(const Duration(seconds: 3), () async {
+                Get.find<StorageServices>().removeStorageCredentials();
+                Get.offAll(() => const LoginView());
+              });
+            },
+            child: Icon(
+              Icons.power_settings_new_rounded,
+              color: AppColors.light,
+              size: 23.sp,
+            ),
+          ),
+          SizedBox(
+            width: 5.w,
+          )
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => controller.getUsers(),

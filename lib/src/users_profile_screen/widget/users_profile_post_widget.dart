@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/src/users_profile_screen/widget/users_profile_video_widget.dart';
+import 'package:mediatooker/src/users_share_post_screen/view/users_share_post_view.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../config/app_colors.dart';
@@ -90,10 +92,15 @@ class UsersProfilePostWidget extends GetView<UsersProfileController> {
                           ),
                         ],
                       ),
-                      Icon(
-                        Icons.clear,
-                        color: AppColors.dark,
-                        size: 23.sp,
+                      GestureDetector(
+                        onTap: () {
+                          controller.allPost.removeAt(index);
+                        },
+                        child: Icon(
+                          Icons.clear,
+                          color: AppColors.dark,
+                          size: 23.sp,
+                        ),
                       ),
                     ],
                   ),
@@ -134,6 +141,110 @@ class UsersProfilePostWidget extends GetView<UsersProfileController> {
                         : const SizedBox(),
                 SizedBox(
                   height: controller.allPost[index].type == "text" ? 0.h : 1.h,
+                ),
+                SizedBox(
+                  height: 1.h,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          controller.getComments(
+                              userid: controller.allPost[index].isShared
+                                  ? controller.allPost[index].sharerId
+                                  : controller.allPost[index].userId,
+                              fcmToken: controller.allPost[index].isShared
+                                  ? controller.allPost[index].sharerFcmToken
+                                  : controller.allPost[index].userFcmToken,
+                              postID: controller.allPost[index].id);
+                        },
+                        child: Icon(
+                          Icons.comment,
+                          color: AppColors.orange,
+                          size: 23.sp,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Obx(
+                        () => controller.allPost[index].isLike.value
+                            ? GestureDetector(
+                                onTap: () {
+                                  controller.unlikePost(
+                                      index: index,
+                                      isLike: controller
+                                          .allPost[index].isLike.value);
+                                },
+                                child: Icon(
+                                  Icons.thumb_up_rounded,
+                                  color: AppColors.orange,
+                                  size: 23.sp,
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: () {
+                                  controller.likePost(
+                                      index: index,
+                                      isLike: controller
+                                          .allPost[index].isLike.value);
+                                  controller.sendNotification(
+                                      userid: controller
+                                          .allPost[index].originalUserId,
+                                      fmcToken: controller
+                                          .allPost[index].userFcmToken,
+                                      action: "like");
+                                  if (controller.allPost[index].isShared) {
+                                    controller.sendNotification(
+                                        userid:
+                                            controller.allPost[index].sharerId,
+                                        fmcToken: controller
+                                            .allPost[index].sharerFcmToken,
+                                        action: "shared");
+                                  }
+                                },
+                                child: Icon(
+                                  Icons.thumb_up_alt_outlined,
+                                  color: AppColors.orange,
+                                  size: 23.sp,
+                                ),
+                              ),
+                      ),
+                    ),
+                    controller.userid.value ==
+                            Get.find<StorageServices>().storage.read('id')
+                        ? const SizedBox.shrink()
+                        : Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                Get.to(() => const UsersSharePostViewPage(),
+                                    arguments: {
+                                      "filetype":
+                                          controller.allPost[index].type,
+                                      "url": controller.allPost[index].url,
+                                      "userName":
+                                          controller.allPost[index].name,
+                                      "profilePicture": controller
+                                          .allPost[index].profilePicture,
+                                      "postID": controller.allPost[index].id,
+                                      "originalCaption": controller
+                                          .allPost[index].originalUserTextPost,
+                                      "originalUserID": controller
+                                          .allPost[index].originalUserId,
+                                    });
+                              },
+                              child: Icon(
+                                Icons.ios_share,
+                                color: AppColors.orange,
+                                size: 23.sp,
+                              ),
+                            ),
+                          ),
+                  ],
+                ),
+                SizedBox(
+                  height: 2.h,
                 ),
                 Container(
                   height: 1.h,

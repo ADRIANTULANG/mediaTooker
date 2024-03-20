@@ -4,11 +4,16 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mediatooker/model/comment_model.dart';
 import 'package:mediatooker/services/constant_strings.dart';
 import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/services/loading_dialog.dart';
+import 'package:mediatooker/services/notification_services.dart';
+import 'package:mediatooker/src/users_profile_screen/bottomsheets/users_profile_bottomsheets.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../model/post_model.dart';
 
@@ -28,8 +33,12 @@ class UsersProfileController extends GetxController {
   RxString rating = ''.obs;
   RxString selectedContentView = 'Posts'.obs;
 
+  TextEditingController commentText = TextEditingController();
+
   RxList<Post> allPost = <Post>[].obs;
-  RxList<Post> mediaPost = <Post>[].obs;
+  RxList<Post> photoPost = <Post>[].obs;
+  RxList<Post> videoPost = <Post>[].obs;
+  RxList<Comments> commentList = <Comments>[].obs;
 
   getUserProfile() async {
     isLoading.value = true;
@@ -121,7 +130,14 @@ class UsersProfileController extends GetxController {
         }
       }
       allPost.assignAll(postFromJson(jsonEncode(dataall)));
-      mediaPost.assignAll(postFromJson(jsonEncode(dataForMediaOnly)));
+      for (var i = 0; i < allPost.length; i++) {
+        if (allPost[i].type == "image") {
+          photoPost.add(allPost[i]);
+        }
+        if (allPost[i].type == "video") {
+          videoPost.add(allPost[i]);
+        }
+      }
     } catch (_) {
       log("ERROR: (getPost) Something went wrong $_");
     }
@@ -231,53 +247,6 @@ class UsersProfileController extends GetxController {
     }
   }
 
-  rateUser({required double userrating}) async {
-    try {
-      Get.back();
-      LoadingDialog.showLoadingDialog();
-      var res = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userid.value)
-          .collection('ratings')
-          .where('userid',
-              isEqualTo: Get.find<StorageServices>().storage.read('id'))
-          .get();
-      if (res.docs.isNotEmpty) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userid.value)
-            .collection('ratings')
-            .doc(res.docs[0].id)
-            .update({"rating": userrating});
-      } else {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userid.value)
-            .collection('ratings')
-            .add({
-          "userid": Get.find<StorageServices>().storage.read('id'),
-          "rating": userrating
-        });
-      }
-      Get.back();
-      var resrating = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userid.value)
-          .collection('ratings')
-          .get();
-      if (resrating.docs.isNotEmpty) {
-        var ratings = resrating.docs;
-        double total = 0.0;
-        for (var i = 0; i < ratings.length; i++) {
-          total = total + ratings[i]['rating'];
-        }
-        rating.value = (total / ratings.length).toStringAsFixed(1);
-      } else {
-        rating.value = 0.0.toStringAsFixed(1);
-      }
-    } catch (_) {}
-  }
-
   callProvider() async {
     final Uri launchUri = Uri(
       scheme: 'tel',
@@ -292,6 +261,161 @@ class UsersProfileController extends GetxController {
       path: email.value,
     );
     await launchUrl(launchUri);
+  }
+
+  getComments(
+      {required String postID,
+      required String fcmToken,
+      required String userid}) async {
+    try {
+      LoadingDialog.showLoadingDialog();
+      var res = await FirebaseFirestore.instance
+          .collection('comments')
+          .where('postid', isEqualTo: postID)
+          .orderBy('datecreated', descending: true)
+          .get();
+      var comments = res.docs;
+      List data = [];
+
+      for (var i = 0; i < comments.length; i++) {
+        Map mapdata = comments[i].data();
+        mapdata['id'] = comments[i].id;
+        mapdata['datecreated'] = comments[i]['datecreated'].toDate().toString();
+        var userres = await (comments[i]['userdoc'] as DocumentReference).get();
+        if (userres.exists) {
+          mapdata['userprofile'] = userres.get('profilePhoto');
+          mapdata['username'] = userres.get('name');
+        } else {
+          mapdata['userprofile'] = defaultImage;
+          mapdata['username'] = "Unknown user";
+        }
+        mapdata.remove('userdoc');
+        data.add(mapdata);
+      }
+
+      commentList.assignAll(commentsFromJson(jsonEncode(data)));
+      Get.back();
+      UsersProfileCommentsBottomSheets.showCommentBottomSheets(
+          userid: userid, postid: postID, fcmToken: fcmToken);
+    } catch (_) {
+      Get.back();
+      log("ERROR: (getComments) Something went wrong $_");
+    }
+  }
+
+  saveComments({required String postid, required String comment}) async {
+    try {
+      LoadingDialog.showLoadingDialog();
+      var userid = FirebaseAuth.instance.currentUser!.uid;
+      var userdoc = FirebaseFirestore.instance.collection('users').doc(userid);
+      await FirebaseFirestore.instance.collection('comments').add({
+        "comment": comment,
+        "userdoc": userdoc,
+        "userid": userid,
+        "datecreated": Timestamp.now(),
+        "postid": postid
+      });
+      Get.back();
+      commentText.clear();
+      reCallComments(postID: postid);
+    } catch (_) {
+      log("ERROR: (saveComments) Something went wrong $_");
+    }
+  }
+
+  reCallComments({required String postID}) async {
+    try {
+      var res = await FirebaseFirestore.instance
+          .collection('comments')
+          .where('postid', isEqualTo: postID)
+          .orderBy('datecreated', descending: true)
+          .get();
+      var comments = res.docs;
+      List data = [];
+
+      for (var i = 0; i < comments.length; i++) {
+        Map mapdata = comments[i].data();
+        mapdata['id'] = comments[i].id;
+        mapdata['datecreated'] = comments[i]['datecreated'].toDate().toString();
+        var userres = await (comments[i]['userdoc'] as DocumentReference).get();
+        if (userres.exists) {
+          mapdata['userprofile'] = userres.get('profilePhoto');
+          mapdata['username'] = userres.get('name');
+        } else {
+          mapdata['userprofile'] = defaultImage;
+          mapdata['username'] = "Unknown user";
+        }
+        mapdata.remove('userdoc');
+        data.add(mapdata);
+      }
+
+      commentList.assignAll(commentsFromJson(jsonEncode(data)));
+    } catch (_) {
+      Get.back();
+      log("ERROR: (reCallComments) Something went wrong $_");
+    }
+  }
+
+  sendNotification({
+    required String fmcToken,
+    required String action,
+    required String userid,
+  }) async {
+    try {
+      String message = "";
+      String title = "";
+      String currentUsername = Get.find<StorageServices>().storage.read('name');
+      if (action == "like") {
+        title = "Post Notification";
+        message = "$currentUsername like your post";
+      }
+      if (action == "comment") {
+        title = "Post Notification";
+        message = "$currentUsername commented on your post";
+      }
+      if (action == "shared") {
+        title = "Post Notification";
+        message = "$currentUsername like your shared post";
+      }
+      await Get.find<NotificationServices>().sendNotification(
+          userToken: fmcToken, message: message, title: title);
+      await FirebaseFirestore.instance.collection('notifications').add({
+        "userid": userid,
+        "datecreated": DateTime.now().toString(),
+        "message": message,
+        "title": title
+      });
+    } catch (_) {
+      log("ERROR: (sendNotification) Something went wrong $_");
+    }
+  }
+
+  likePost({required int index, required bool isLike}) async {
+    try {
+      var userid = FirebaseAuth.instance.currentUser!.uid;
+      var postDocument =
+          FirebaseFirestore.instance.collection('post').doc(allPost[index].id);
+      postDocument.update({
+        'likes': FieldValue.arrayUnion([userid])
+      });
+      allPost[index].isLike.value = isLike ? false : true;
+    } catch (_) {
+      log("ERROR: (likePost) Something went wrong $_");
+    }
+  }
+
+  unlikePost({required int index, required bool isLike}) async {
+    try {
+      var userid = FirebaseAuth.instance.currentUser!.uid;
+      var postDocument =
+          FirebaseFirestore.instance.collection('post').doc(allPost[index].id);
+      postDocument.update({
+        'likes': FieldValue.arrayRemove([userid])
+      });
+      allPost[index].isLike.value = isLike ? false : true;
+    } catch (_) {
+      log("ERROR: (unlikePost) Something went wrong $_");
+    }
   }
 
   @override

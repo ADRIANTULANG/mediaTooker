@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mediatooker/services/image_fullview.dart';
 import 'package:mediatooker/src/users_profile_screen/controller/users_profile_controller.dart';
 import 'package:sizer/sizer.dart';
 
@@ -13,13 +14,19 @@ class UsersProfileImageWidget extends GetView<UsersProfileController> {
       padding: EdgeInsets.only(left: 5.w, right: 5.w),
       child: CachedNetworkImage(
         imageUrl: controller.allPost[index].url,
-        imageBuilder: (context, imageProvider) => Container(
-          height: 30.h,
-          width: 100.w,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.cover,
+        imageBuilder: (context, imageProvider) => GestureDetector(
+          onTap: () {
+            Get.to(
+                () => ImageFullView(imageUrl: controller.allPost[index].url));
+          },
+          child: Container(
+            height: 30.h,
+            width: 100.w,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: imageProvider,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),
