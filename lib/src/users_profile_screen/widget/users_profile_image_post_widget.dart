@@ -22,13 +22,15 @@ class UsersProfileImagePostWidget extends GetView<UsersProfileController> {
           itemCount: controller.photoPost.length,
           itemBuilder: (BuildContext context, int index) {
             return CachedNetworkImage(
-              imageUrl: controller.allPost[index].url,
+              imageUrl: controller.photoPost[index].url,
               imageBuilder: (context, imageProvider) => GestureDetector(
                 onTap: () {
                   Get.to(() =>
-                      ImageFullView(imageUrl: controller.allPost[index].url));
+                      ImageFullView(imageUrl: controller.photoPost[index].url));
                 },
                 child: Container(
+                  height: 10.h,
+                  width: 100.w,
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       image: imageProvider,
@@ -37,7 +39,8 @@ class UsersProfileImagePostWidget extends GetView<UsersProfileController> {
                   ),
                 ),
               ),
-              placeholder: (context, url) => const CircularProgressIndicator(),
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             );
           },

@@ -1,6 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,6 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mediatooker/src/users_home_screen/controller/users_home_controller.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_compress/video_compress.dart';
 
 import '../../../services/loading_dialog.dart';
 
@@ -99,10 +104,50 @@ class UserCreatePostController extends GetxController {
         } else {
           type = 'video';
         }
+        // COMPRESSED FILE IF VIDEO
+        if (type == "video") {
+          MediaInfo? mediaInfo = await VideoCompress.compressVideo(
+            filepath.value,
+            quality: VideoQuality.Res640x480Quality,
+            deleteOrigin: false, // It's false by default
+          );
+          File? compressedVideo = mediaInfo!.file;
+          // filepath.value = compressedVideo!.path;
+          String inputPath = compressedVideo!.path;
+
+          final Directory tempDir = await getTemporaryDirectory();
+          String outputPath = '${tempDir.path}/compressedvideo.mp4';
+          log("$outputPath path directory");
+          String command =
+              '-y -i $inputPath -vcodec libx264 -crf 22 $outputPath';
+
+          // String command = '-y -i $inputPath -c:v libx264 -crf 24 $outputPath';
+          FFmpegKit.execute(command).then((session) async {
+            final returnCode = await session.getReturnCode();
+
+            if (ReturnCode.isSuccess(returnCode)) {
+              filepath.value = outputPath;
+              log("SUCCESS COMPRESSED");
+            } else if (ReturnCode.isCancel(returnCode)) {
+              // CANCEL
+              log("CANCEL COMPRESSED");
+            } else {
+              // ERROR
+              String message = '';
+              FFmpegKitConfig.enableLogCallback((log) {
+                message = log.getMessage();
+                print("${message}mao ni error");
+              });
+              log(message);
+              filepath.value = outputPath;
+            }
+          });
+        }
         Uint8List uint8list =
             Uint8List.fromList(File(filepath.value).readAsBytesSync());
         final ref =
             FirebaseStorage.instance.ref().child("post/${fileName.value}");
+
         var uploadTask =
             type == 'image' ? ref.putData(uint8list) : ref.putFile(pickedile!);
         final snapshot = await uploadTask.whenComplete(() {});

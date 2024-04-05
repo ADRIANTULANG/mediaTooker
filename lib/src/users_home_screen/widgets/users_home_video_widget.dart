@@ -45,7 +45,6 @@ class _UsersHomeVideoWidgetState extends State<UsersHomeVideoWidget> {
                 );
                 await controller.loadVideoSource(videoSource);
                 listenToController();
-                // vController!.play();
               },
             ),
           ),

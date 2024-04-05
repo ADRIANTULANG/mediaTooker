@@ -79,7 +79,6 @@ class UsersHomeViewController extends GetxController {
       'jpg',
       'png',
       'jpeg',
-      'svg',
       'bmp',
       'mp4',
       'gif',
