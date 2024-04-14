@@ -136,7 +136,7 @@ class UserCreatePostController extends GetxController {
               String message = '';
               FFmpegKitConfig.enableLogCallback((log) {
                 message = log.getMessage();
-                print("${message}mao ni error");
+                // print("${message}mao ni error");
               });
               log(message);
               filepath.value = outputPath;

@@ -9,6 +9,7 @@ import 'package:sizer/sizer.dart';
 
 import '../../../config/app_colors.dart';
 import '../../../config/app_fontsizes.dart';
+import '../alertdialog/users_profile_alertdialog.dart';
 import '../controller/users_profile_controller.dart';
 import 'users_profile_image_widget.dart';
 import 'users_profile_sharedpost_widget.dart';
@@ -92,15 +93,41 @@ class UsersProfilePostWidget extends GetView<UsersProfileController> {
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          controller.allPost.removeAt(index);
-                        },
-                        child: Icon(
-                          Icons.clear,
-                          color: AppColors.dark,
-                          size: 23.sp,
-                        ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              UsersProfileAlertDialog.showEditCaption(
+                                  captionText:
+                                      controller.allPost[index].isShared
+                                          ? controller.allPost[index]
+                                              .originalUserTextPost
+                                          : controller.allPost[index].textpost,
+                                  captionID: controller.allPost[index].id,
+                                  isShared: controller.allPost[index].isShared);
+                            },
+                            child: Icon(
+                              Icons.edit,
+                              color: AppColors.dark,
+                              size: 20.sp,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 3.w,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              UsersProfileAlertDialog.showDeletePost(
+                                  index: index,
+                                  postID: controller.allPost[index].id);
+                            },
+                            child: Icon(
+                              Icons.clear,
+                              color: AppColors.dark,
+                              size: 23.sp,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

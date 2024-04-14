@@ -418,6 +418,44 @@ class UsersProfileController extends GetxController {
     }
   }
 
+  deletePost({required String postID, required int index}) async {
+    try {
+      Get.back();
+      LoadingDialog.showLoadingDialog();
+      allPost.removeAt(index);
+      await FirebaseFirestore.instance.collection('post').doc(postID).delete();
+      Get.back();
+      await getPost();
+    } catch (_) {
+      log("ERROR: (deletePost) Something went wrong $_");
+    }
+  }
+
+  editCaption(
+      {required String captionID,
+      required String caption,
+      required bool isShared}) async {
+    try {
+      Get.back();
+      LoadingDialog.showLoadingDialog();
+      if (isShared) {
+        await FirebaseFirestore.instance
+            .collection('post')
+            .doc(captionID)
+            .update({"originalUserTextPost": caption});
+      } else {
+        await FirebaseFirestore.instance
+            .collection('post')
+            .doc(captionID)
+            .update({"textpost": caption});
+      }
+      Get.back();
+      await getPost();
+    } catch (_) {
+      log("ERROR: (deletePost) Something went wrong $_");
+    }
+  }
+
   @override
   void onInit() async {
     userid.value = await Get.arguments['userid'];
