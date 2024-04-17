@@ -14,6 +14,7 @@ import '../../../config/app_colors.dart';
 import '../../../config/app_fontsizes.dart';
 import '../../../services/loading_dialog.dart';
 import '../../users_profile_screen/view/users_profile_view.dart';
+import '../dialog/admin_users_list_alertdialog.dart';
 
 class AdminUsersListView extends GetView<AdminUsersListController> {
   const AdminUsersListView({super.key});
@@ -152,9 +153,14 @@ class AdminUsersListView extends GetView<AdminUsersListController> {
                                         controller.usersList[index].restricted
                                             ? false
                                             : true;
-                                    controller.editRestriction(
-                                        docid: controller.usersList[index].id,
-                                        boolean: boolean);
+                                    AdminUsersListAlertDialog
+                                        .showTerminateOrNot(
+                                            docId:
+                                                controller.usersList[index].id,
+                                            isTerminateOrActivate: boolean);
+                                    // controller.editRestriction(
+                                    //     docid: controller.usersList[index].id,
+                                    //     boolean: boolean);
                                   },
                                   child: controller.usersList[index].restricted
                                       ? const Icon(

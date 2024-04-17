@@ -442,12 +442,12 @@ class UsersProfileController extends GetxController {
         await FirebaseFirestore.instance
             .collection('post')
             .doc(captionID)
-            .update({"originalUserTextPost": caption});
+            .update({"textpost": caption});
       } else {
         await FirebaseFirestore.instance
             .collection('post')
             .doc(captionID)
-            .update({"textpost": caption});
+            .update({"originalUserTextPost": caption, "textpost": caption});
       }
       Get.back();
       await getPost();

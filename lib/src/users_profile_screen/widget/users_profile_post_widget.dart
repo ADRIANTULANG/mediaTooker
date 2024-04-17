@@ -93,41 +93,49 @@ class UsersProfilePostWidget extends GetView<UsersProfileController> {
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              UsersProfileAlertDialog.showEditCaption(
-                                  captionText:
-                                      controller.allPost[index].isShared
-                                          ? controller.allPost[index]
-                                              .originalUserTextPost
-                                          : controller.allPost[index].textpost,
-                                  captionID: controller.allPost[index].id,
-                                  isShared: controller.allPost[index].isShared);
-                            },
-                            child: Icon(
-                              Icons.edit,
-                              color: AppColors.dark,
-                              size: 20.sp,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 3.w,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              UsersProfileAlertDialog.showDeletePost(
-                                  index: index,
-                                  postID: controller.allPost[index].id);
-                            },
-                            child: Icon(
-                              Icons.clear,
-                              color: AppColors.dark,
-                              size: 23.sp,
-                            ),
-                          ),
-                        ],
+                      Obx(
+                        () => controller.userid.value ==
+                                Get.find<StorageServices>().storage.read('id')
+                            ? Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      UsersProfileAlertDialog.showEditCaption(
+                                          captionText:
+                                              controller.allPost[index].isShared
+                                                  ? controller
+                                                      .allPost[index].textpost
+                                                  : controller.allPost[index]
+                                                      .originalUserTextPost,
+                                          captionID:
+                                              controller.allPost[index].id,
+                                          isShared: controller
+                                              .allPost[index].isShared);
+                                    },
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: AppColors.dark,
+                                      size: 20.sp,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 3.w,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      UsersProfileAlertDialog.showDeletePost(
+                                          index: index,
+                                          postID: controller.allPost[index].id);
+                                    },
+                                    child: Icon(
+                                      Icons.clear,
+                                      color: AppColors.dark,
+                                      size: 23.sp,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
                       ),
                     ],
                   ),
