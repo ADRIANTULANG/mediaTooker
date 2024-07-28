@@ -259,25 +259,144 @@ class UsersRegistrationView extends GetView<UsersRegistrationViewController> {
                     hintStyle: const TextStyle(fontFamily: 'Bariol')),
               ),
             ),
+            Obx(
+              () => controller.dropDownValue.value == "Client"
+                  ? const SizedBox()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 2.h,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                          child: Text(
+                            "Categories",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: AppFontSizes.regular,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: .5.h,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 5.w),
+                          child: SizedBox(
+                            height: 9.h,
+                            width: 100.w,
+                            child: Obx(
+                              () => ListView.builder(
+                                itemCount: controller.categoriesList.length,
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                        left: index == 0 ? 5.w : 0.w,
+                                        right: 2.w,
+                                        top: 1.h,
+                                        bottom: 1.h),
+                                    child: Obx(
+                                      () => ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: controller
+                                                      .categoriesList[index]
+                                                      .isSelected
+                                                      .value
+                                                  ? const Color(0xffFF6F00)
+                                                  : const Color(0xfffff0e6)),
+                                          onPressed: () {
+                                            if (controller.categoriesList[index]
+                                                    .isSelected.value ==
+                                                false) {
+                                              int count = 0;
+                                              for (var i = 0;
+                                                  i <
+                                                      controller.categoriesList
+                                                          .length;
+                                                  i++) {
+                                                if (controller.categoriesList[i]
+                                                    .isSelected.value) {
+                                                  count++;
+                                                }
+                                              }
+                                              if (count < 3) {
+                                                controller
+                                                    .categoriesList[index]
+                                                    .isSelected
+                                                    .value = controller
+                                                        .categoriesList[index]
+                                                        .isSelected
+                                                        .value
+                                                    ? false
+                                                    : true;
+                                              } else {
+                                                Get.snackbar("Message",
+                                                    "You can only select three categories",
+                                                    backgroundColor:
+                                                        AppColors.orange,
+                                                    colorText: AppColors.light);
+                                              }
+                                            } else {
+                                              controller.categoriesList[index]
+                                                  .isSelected.value = controller
+                                                      .categoriesList[index]
+                                                      .isSelected
+                                                      .value
+                                                  ? false
+                                                  : true;
+                                            }
+                                          },
+                                          child: Obx(
+                                            () => Text(
+                                              controller
+                                                  .categoriesList[index].name,
+                                              style: TextStyle(
+                                                  color: controller
+                                                          .categoriesList[index]
+                                                          .isSelected
+                                                          .value
+                                                      ? Colors.white
+                                                      : Colors.black),
+                                            ),
+                                          )),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
             SizedBox(
               height: 4.h,
             ),
             Padding(
-              padding: EdgeInsets.only(left: 5.w, right: 5.w),
+              padding: EdgeInsets.only(left: 5.w, right: 5.w, bottom: 2.h),
               child: SizedBox(
                 width: 100.w,
                 height: 7.h,
                 child: ElevatedButton(
                   style: ButtonStyle(
                       foregroundColor:
-                          MaterialStateProperty.all<Color>(AppColors.dark),
+                          const MaterialStatePropertyAll(AppColors.dark),
                       backgroundColor:
-                          MaterialStateProperty.all<Color>(AppColors.orange),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          const MaterialStatePropertyAll(AppColors.orange),
+                      shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                               side: const BorderSide(color: Colors.white)))),
                   onPressed: () {
+                    controller.selectedCategories.clear();
+                    for (var i = 0; i < controller.categoriesList.length; i++) {
+                      if (controller.categoriesList[i].isSelected.value) {
+                        controller.selectedCategories
+                            .add(controller.categoriesList[i].name);
+                      }
+                    }
                     if (controller.dropDownValue.value.isEmpty ||
                         controller.contactno.text.isEmpty ||
                         controller.address.text.isEmpty ||
@@ -287,6 +406,12 @@ class UsersRegistrationView extends GetView<UsersRegistrationViewController> {
                           colorText: AppColors.light);
                     } else if (controller.contactno.text.length != 10) {
                       Get.snackbar("Message", "Invalid contactno.",
+                          backgroundColor: AppColors.orange,
+                          colorText: AppColors.light);
+                    } else if (controller.selectedCategories.isEmpty &&
+                        controller.dropDownValue.value != "Client") {
+                      Get.snackbar(
+                          "Message", "Please select at least 1 category.",
                           backgroundColor: AppColors.orange,
                           colorText: AppColors.light);
                     } else {

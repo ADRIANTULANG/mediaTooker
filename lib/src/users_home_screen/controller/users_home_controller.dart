@@ -19,19 +19,27 @@ import '../bottomsheets/users_home_comment_bottom_sheet.dart';
 
 class UsersHomeViewController extends GetxController {
   TextEditingController commentText = TextEditingController();
-
+  ScrollController scrollController = ScrollController();
   RxList<Post> postList = <Post>[].obs;
   RxList<Comments> commentList = <Comments>[].obs;
+  DocumentSnapshot? lastDocumentSnapshot;
+  String? lastDocumentID;
 
-  @override
-  void onInit() async {
-    Future.delayed(const Duration(seconds: 1), () async {
-      LoadingDialog.showLoadingDialog();
-      await getPost();
-      Get.back();
-    });
-
-    super.onInit();
+  listenToScroll() async {
+    if (scrollController.hasClients) {
+      log("listens to scroll");
+      scrollController.addListener(() {
+        debugPrint(scrollController.position.maxScrollExtent.toString());
+        if (scrollController.position.extentAfter == 0) {
+          log('Reached the last item');
+          if (postList.length % 10 == 0) {
+            reQueryPost();
+          } else {
+            log('No data available');
+          }
+        }
+      });
+    }
   }
 
   getPost() async {
@@ -39,6 +47,7 @@ class UsersHomeViewController extends GetxController {
       var res = await FirebaseFirestore.instance
           .collection('post')
           .orderBy('datecreated', descending: true)
+          .limit(10)
           .get();
       var post = res.docs;
       List data = [];
@@ -67,7 +76,65 @@ class UsersHomeViewController extends GetxController {
         data.add(mapdata);
       }
       postList.assignAll(postFromJson(jsonEncode(data)));
+      if (postList.isNotEmpty) {
+        lastDocumentID = postList.last.id;
+        lastDocumentSnapshot = post.last;
+      }
     } catch (_) {
+      log("ERROR: (getPost) Something went wrong $_");
+    }
+  }
+
+  reQueryPost() async {
+    try {
+      LoadingDialog.showLoadingDialog();
+      if (lastDocumentID != null) {
+        var res = await FirebaseFirestore.instance
+            .collection('post')
+            .orderBy('datecreated', descending: true)
+            .startAfterDocument(lastDocumentSnapshot!)
+            .limit(10)
+            .get();
+        var post = res.docs;
+        List data = [];
+        for (var i = 0; i < post.length; i++) {
+          Map mapdata = post[i].data();
+          mapdata['id'] = post[i].id;
+          mapdata['datecreated'] = post[i]['datecreated'].toDate().toString();
+          var userres =
+              await (post[i]['userdocref'] as DocumentReference).get();
+          var originaluserres =
+              await (post[i]['originalUserDocRef'] as DocumentReference).get();
+          mapdata['name'] = originaluserres.get('name');
+          mapdata['profilePicture'] = originaluserres.get('profilePhoto');
+          mapdata['usertype'] = originaluserres.get('usertype');
+          mapdata['contactno'] = originaluserres.get('contactno');
+          mapdata['userFcmToken'] = originaluserres.get('fcmToken');
+
+          mapdata['sharerID'] = userres.id;
+          mapdata['sharerName'] = userres.get('name');
+          mapdata['sharerProfilePicture'] = userres.get('profilePhoto');
+          mapdata['sharerUsertype'] = userres.get('usertype');
+          mapdata['sharerFcmToken'] = userres.get('fcmToken');
+
+          mapdata.remove('originalUserDocRef');
+          mapdata.remove('userdocref');
+          data.add(mapdata);
+        }
+        postList.addAll(postFromJson(jsonEncode(data)));
+        if (postList.isNotEmpty) {
+          lastDocumentID = postList.last.id;
+          lastDocumentSnapshot = post.last;
+        } else {
+          lastDocumentID = null;
+          lastDocumentSnapshot = null;
+        }
+        log("NUMBERS OF POSTS:::${postList.length.toString()}");
+      }
+      Get.back();
+    } catch (_) {
+      Get.back();
+      log("NUMBERS OF POSTS:::${postList.length.toString()}");
       log("ERROR: (getPost) Something went wrong $_");
     }
   }
@@ -267,5 +334,25 @@ class UsersHomeViewController extends GetxController {
     } catch (_) {
       log("ERROR: (sendNotification) Something went wrong $_");
     }
+  }
+
+  @override
+  void onInit() async {
+    Future.delayed(const Duration(seconds: 1), () async {
+      LoadingDialog.showLoadingDialog();
+      await getPost();
+      Get.back();
+      listenToScroll();
+    });
+
+    super.onInit();
+  }
+
+  @override
+  void onClose() {
+    if (scrollController.hasClients) {
+      scrollController.dispose();
+    }
+    super.onClose();
   }
 }

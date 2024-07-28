@@ -33,6 +33,52 @@ class UsersBottomNavViewController extends GetxController {
     }
   }
 
+  // updateSubscription() async {
+  //   try {
+  //     LoadingDialog.showLoadingDialog();
+  //     var res = await FirebaseFirestore.instance.collection('users').get();
+  //     var users = res.docs;
+  //     WriteBatch batch = FirebaseFirestore.instance.batch();
+  //     for (var i = 0; i < users.length; i++) {
+  //       batch.update(
+  //           FirebaseFirestore.instance.collection('users').doc(users[i].id),
+  //           {'uploads': 3});
+  //     }
+  //     await batch.commit();
+  //     Get.back();
+  //   } catch (_) {
+  //     log("ERROR: (updateSubscription) Something went wrong $_");
+  //   }
+  // }
+
+  // addCategories() async {
+  //   try {
+  //     List categories = [
+  //       'Photographer',
+  //       'Videographer',
+  //       'Video Editor',
+  //       'Graphics Artist',
+  //       '3d Artist',
+  //       'Concept Artists',
+  //       'Interactive Media Designers',
+  //       'Motion Graphics Artists',
+  //       'Digital Illustrators'
+  //     ];
+  //     LoadingDialog.showLoadingDialog();
+  //     WriteBatch batch = FirebaseFirestore.instance.batch();
+  //     for (var i = 0; i < categories.length; i++) {
+  //       batch.set(FirebaseFirestore.instance.collection('categories').doc(), {
+  //         "datecreated": Timestamp.now(),
+  //         "name": categories[i],
+  //       });
+  //     }
+  //     await batch.commit();
+  //     Get.back();
+  //   } catch (_) {
+  //     log("ERROR: (addCategories) Something went wrong $_");
+  //   }
+  // }
+
   @override
   void onInit() async {
     await updateFcmToken();

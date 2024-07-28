@@ -14,6 +14,8 @@ class UserSearchController extends GetxController {
   RxList<User> usersList = <User>[].obs;
   RxList<User> usersMasterList = <User>[].obs;
   Timer? debouncer;
+  RxList<String> categoriesList = <String>[].obs;
+  RxString selectedCategory = 'All'.obs;
 
   getUsers() async {
     try {
@@ -26,6 +28,7 @@ class UserSearchController extends GetxController {
         mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
         data.add(mapdata);
       }
+      log(jsonEncode(data));
       usersList.assignAll(userFromJson(jsonEncode(data)));
       usersMasterList.assignAll(userFromJson(jsonEncode(data)));
       Get.back();
@@ -36,26 +39,72 @@ class UserSearchController extends GetxController {
   }
 
   searchFunction({required String keyword}) async {
-    if (keyword.isNotEmpty) {
-      usersList.clear();
-      for (var i = 0; i < usersMasterList.length; i++) {
-        if (usersMasterList[i]
-            .name
-            .toLowerCase()
-            .toString()
-            .contains(keyword.toLowerCase().toString())) {
-          usersList.add(usersMasterList[i]);
+    usersList.clear();
+    if (selectedCategory.value == "All") {
+      log("all ang selected category");
+      if (keyword.isEmpty) {
+        usersList.assignAll(usersMasterList);
+      } else {
+        for (var i = 0; i < usersMasterList.length; i++) {
+          if (usersMasterList[i]
+              .name
+              .toLowerCase()
+              .toString()
+              .contains(keyword.toLowerCase().toString())) {
+            usersList.add(usersMasterList[i]);
+          }
         }
       }
     } else {
-      usersList.assignAll(usersMasterList);
+      log("dli all ang selected category");
+      for (var i = 0; i < usersMasterList.length; i++) {
+        if (keyword.isEmpty) {
+          log("dre 1");
+          if (usersMasterList[i].categories.contains(selectedCategory.value)) {
+            usersList.add(usersMasterList[i]);
+          }
+        } else {
+          log("dre 2");
+          if (usersMasterList[i]
+                  .name
+                  .toLowerCase()
+                  .toString()
+                  .contains(keyword.toLowerCase().toString()) &&
+              usersMasterList[i].categories.contains(selectedCategory.value)) {
+            usersList.add(usersMasterList[i]);
+          }
+        }
+      }
     }
+  }
+
+  getCategories() async {
+    try {
+      var res = await FirebaseFirestore.instance.collection('categories').get();
+      var categories = res.docs;
+      List<String> tempdata = <String>[];
+      for (var i = 0; i < categories.length; i++) {
+        Map mapdata = categories[i].data();
+
+        tempdata.add(mapdata['name']);
+      }
+      categoriesList.assignAll(tempdata);
+      categoriesList.insert(0, "All");
+    } catch (e) {
+      log("ERROR: (getUsers) Something went wrong.");
+    }
+  }
+
+  String concatType({required List strings}) {
+    String concatenated = strings.join(', ');
+    return concatenated;
   }
 
   @override
   void onInit() async {
     Future.delayed(const Duration(seconds: 1), () async {
       LoadingDialog.showLoadingDialog();
+      await getCategories();
       getUsers();
     });
 

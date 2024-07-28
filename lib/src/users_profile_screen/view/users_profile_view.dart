@@ -12,6 +12,7 @@ import '../../users_book_provider_screen/view/users_book_provider_view.dart';
 import '../alertdialog/users_profile_alertdialog.dart';
 import '../controller/users_profile_controller.dart';
 import '../widget/users_profile_image_post_widget.dart';
+import '../widget/users_profile_project_finished_widget.dart';
 import '../widget/users_profile_video_post_widget.dart';
 import '../widget/users_profile_post_widget.dart';
 
@@ -289,24 +290,73 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                       fontWeight: FontWeight.normal,
                                       fontSize: AppFontSizes.regular),
                                 ),
-                                Text(
-                                  "+63${controller.contactNo.value}",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: AppFontSizes.regular),
-                                ),
+                                // Text(
+                                //   "+63${controller.contactNo.value}",
+                                //   style: TextStyle(
+                                //       fontWeight: FontWeight.normal,
+                                //       fontSize: AppFontSizes.regular),
+                                // ),
                                 Text(
                                   controller.address.value,
                                   style: TextStyle(
                                       fontWeight: FontWeight.normal,
                                       fontSize: AppFontSizes.regular),
                                 ),
+                                Obx(
+                                  () => controller.usertype.value == 'Client'
+                                      ? const SizedBox()
+                                      : SizedBox(
+                                          width: 80.w,
+                                          child: Obx(
+                                            () => ListView.builder(
+                                              padding: EdgeInsets.zero,
+                                              shrinkWrap: true,
+                                              itemCount: controller
+                                                  .userCategories.length,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              itemBuilder:
+                                                  (BuildContext context,
+                                                      int index) {
+                                                return Padding(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: .2.h),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.circle,
+                                                        size: 7.sp,
+                                                      ),
+                                                      SizedBox(
+                                                        width: 1.w,
+                                                      ),
+                                                      Text(
+                                                        controller
+                                                                .userCategories[
+                                                            index],
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            fontSize:
+                                                                AppFontSizes
+                                                                    .regular),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                )
                               ],
                             ),
                             Get.find<StorageServices>().storage.read('id') ==
                                     controller.userid.value
                                 ? GestureDetector(
-                                    onTap: () {
+                                    onTap: () async {
+                                      await controller.getCategories();
                                       UsersProfileAlertDialog.showEditDetails(
                                           oldcontact:
                                               controller.contactNo.value,
@@ -318,16 +368,17 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                       size: 23.sp,
                                     ),
                                   )
-                                : GestureDetector(
-                                    onTap: () {
-                                      controller.callProvider();
-                                    },
-                                    child: Icon(
-                                      Icons.call,
-                                      color: AppColors.orange,
-                                      size: 23.sp,
-                                    ),
-                                  ),
+                                : const SizedBox(),
+                            // GestureDetector(
+                            //     onTap: () {
+                            //       controller.callProvider();
+                            //     },
+                            //     child: Icon(
+                            //       Icons.call,
+                            //       color: AppColors.orange,
+                            //       size: 23.sp,
+                            //     ),
+                            //   ),
                           ],
                         ),
                       ),
@@ -385,6 +436,36 @@ class UsersProfileView extends GetView<UsersProfileController> {
                           ],
                         ),
                       ),
+                      Get.find<StorageServices>().storage.read('id') ==
+                              controller.userid.value
+                          ? const SizedBox()
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 2.h,
+                                ),
+                                Padding(
+                                  padding:
+                                      EdgeInsets.only(left: 5.w, right: 5.w),
+                                  child: SizedBox(
+                                    width: 100.w,
+                                    child: ElevatedButton(
+                                        onPressed: () {
+                                          UsersProfileAlertDialog
+                                              .showReportDetails(
+                                                  email: controller.email.value,
+                                                  image: controller
+                                                      .profilePic.value,
+                                                  name: controller.name.value,
+                                                  userID:
+                                                      controller.userid.value);
+                                        },
+                                        child: const Text("Report this user.")),
+                                  ),
+                                ),
+                              ],
+                            ),
                       SizedBox(
                         height: 2.h,
                       ),
@@ -492,6 +573,45 @@ class UsersProfileView extends GetView<UsersProfileController> {
                                 ),
                               ),
                             ),
+                            SizedBox(
+                              width: 3.w,
+                            ),
+                            Obx(
+                              () => controller.usertype.value == "Client"
+                                  ? const SizedBox()
+                                  : GestureDetector(
+                                      onTap: () {
+                                        controller.selectedContentView.value =
+                                            "Projects";
+                                      },
+                                      child: Obx(
+                                        () => Container(
+                                          padding: EdgeInsets.only(
+                                              top: 1.h,
+                                              bottom: 1.h,
+                                              left: 3.w,
+                                              right: 3.w),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              color: controller
+                                                          .selectedContentView
+                                                          .value ==
+                                                      "Projects"
+                                                  ? AppColors.light
+                                                  : null),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            "Projects",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: AppFontSizes.regular,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                            ),
                           ],
                         ),
                       ),
@@ -513,7 +633,9 @@ class UsersProfileView extends GetView<UsersProfileController> {
                           ? const UsersProfileVideoWidget()
                           : controller.selectedContentView.value == "Image"
                               ? const UsersProfileImagePostWidget()
-                              : const UsersProfilePostWidget()),
+                              : controller.selectedContentView.value == "Posts"
+                                  ? const UsersProfilePostWidget()
+                                  : const UserProjectFinishedWidget()),
                     ],
                   ),
                 ),

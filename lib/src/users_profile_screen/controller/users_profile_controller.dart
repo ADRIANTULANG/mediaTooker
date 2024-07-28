@@ -15,7 +15,10 @@ import 'package:mediatooker/services/loading_dialog.dart';
 import 'package:mediatooker/services/notification_services.dart';
 import 'package:mediatooker/src/users_profile_screen/bottomsheets/users_profile_bottomsheets.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../config/app_colors.dart';
+import '../../../model/bookings_model.dart';
 import '../../../model/post_model.dart';
+import '../../../services/categories_model.dart';
 
 class UsersProfileController extends GetxController {
   RxString userid = ''.obs;
@@ -38,7 +41,29 @@ class UsersProfileController extends GetxController {
   RxList<Post> allPost = <Post>[].obs;
   RxList<Post> photoPost = <Post>[].obs;
   RxList<Post> videoPost = <Post>[].obs;
+  RxList<Bookings> projectList = <Bookings>[].obs;
+  RxList<Bookings> projectListMasterList = <Bookings>[].obs;
   RxList<Comments> commentList = <Comments>[].obs;
+  RxList<String> userCategories = <String>[].obs;
+  RxList<CategoriesModel> categoriesList = <CategoriesModel>[].obs;
+
+  getCategories() async {
+    try {
+      var res = await FirebaseFirestore.instance.collection('categories').get();
+      var categories = res.docs;
+      List tempdata = [];
+      for (var i = 0; i < categories.length; i++) {
+        Map mapdata = categories[i].data();
+        mapdata['id'] = categories[i].id;
+        mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
+        tempdata.add(mapdata);
+      }
+      categoriesList.assignAll(categoriesModelFromJson(jsonEncode(tempdata)));
+    } catch (_) {
+      Get.snackbar("Message", "Something went wrong please try again later",
+          backgroundColor: AppColors.orange, colorText: AppColors.dark);
+    }
+  }
 
   getUserProfile() async {
     isLoading.value = true;
@@ -60,6 +85,11 @@ class UsersProfileController extends GetxController {
         email.value = userdetails.get('email');
         accountType.value = userdetails.get('accountType');
         bio.value = userdetails.get('bio');
+        var cat = userdetails.get('categories');
+        for (var i = 0; i < cat.length; i++) {
+          userCategories.add(cat[i]);
+        }
+
         var resrating = await FirebaseFirestore.instance
             .collection('users')
             .doc(userid.value)
@@ -230,16 +260,24 @@ class UsersProfileController extends GetxController {
     }
   }
 
-  editDetails({required String newcontact, required String newaddress}) async {
+  editDetails(
+      {required String newcontact,
+      required String newaddress,
+      required List<String> updatedcategories}) async {
     try {
       Get.back();
       LoadingDialog.showLoadingDialog();
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userid.value)
-          .update({"address": newaddress, "contactno": newcontact});
+          .update({
+        "address": newaddress,
+        "contactno": newcontact,
+        "categories": updatedcategories
+      });
       contactNo.value = newcontact;
       address.value = newaddress;
+      userCategories.assignAll(updatedcategories);
       Get.back();
     } catch (_) {
       Get.back();
@@ -456,11 +494,114 @@ class UsersProfileController extends GetxController {
     }
   }
 
+  reportUser(
+      {required String userID,
+      required String name,
+      required String image,
+      required String description,
+      required String email}) async {
+    try {
+      Get.back();
+      LoadingDialog.showLoadingDialog();
+      await FirebaseFirestore.instance.collection('reports').add({
+        "userid": userID,
+        "name": name,
+        "email": email,
+        "image": image,
+        "description": description,
+        "reporterID": Get.find<StorageServices>().storage.read('id'),
+        "reporterName": Get.find<StorageServices>().storage.read('name'),
+        "reporterImage":
+            Get.find<StorageServices>().storage.read('profilePicture'),
+        "datecreated": Timestamp.now(),
+        "validated": false
+      });
+      Get.back();
+      Get.snackbar("Message", "Successfully reported.",
+          duration: const Duration(seconds: 3),
+          backgroundColor: AppColors.orange,
+          colorText: AppColors.light);
+    } catch (_) {
+      log("ERROR: (reportUser) Something went wrong $_");
+    }
+  }
+
+  getFinishedProjects() async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> res = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('providerID', isEqualTo: userid.value)
+          .orderBy('datecreated', descending: true)
+          .where('accepted', isEqualTo: true)
+          .get();
+
+      var projects = res.docs;
+      List data = [];
+      for (var i = 0; i < projects.length; i++) {
+        Map mapdata = projects[i].data();
+        if (mapdata['status'] == "Finished") {
+          mapdata['id'] = projects[i].id;
+          mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
+          mapdata['date'] = mapdata['date'].toDate().toString();
+          mapdata['time'] = mapdata['time'].toDate().toString();
+          var providerDetails =
+              await (mapdata['providerDocRef'] as DocumentReference).get();
+          mapdata['providerName'] = providerDetails.get('name');
+          mapdata['providerEmail'] = providerDetails.get('email');
+          mapdata['providerProfilePic'] = providerDetails.get('profilePhoto');
+          mapdata['providerAddress'] = providerDetails.get('address');
+          mapdata['providerContact'] = providerDetails.get('contactno');
+          mapdata['providerFcmToken'] = providerDetails.get('fcmToken');
+
+          var clientDetails =
+              await (mapdata['clientDocRef'] as DocumentReference).get();
+          mapdata['clientName'] = clientDetails.get('name');
+          mapdata['clientEmail'] = clientDetails.get('email');
+          mapdata['clientProfilePic'] = clientDetails.get('profilePhoto');
+          mapdata['clientAddress'] = clientDetails.get('address');
+          mapdata['clientContact'] = clientDetails.get('contactno');
+          mapdata['clientFcmToken'] = clientDetails.get('fcmToken');
+
+          var providerRatingsAndFeedbackDetails =
+              await (mapdata['providerDocRef'] as DocumentReference)
+                  .collection('ratings')
+                  .where('projectID', isEqualTo: projects[i].id)
+                  .where('userid', isEqualTo: clientDetails.id)
+                  .get();
+          var ratings = providerRatingsAndFeedbackDetails.docs;
+          if (ratings.isNotEmpty) {
+            mapdata['clientRating'] = ratings[0]['rating'].toString();
+          }
+
+          mapdata.remove('clientDocRef');
+          mapdata.remove('providerDocRef');
+          mapdata.remove('chats');
+          data.add(mapdata);
+        }
+      }
+
+      projectList.assignAll(bookingsFromJson(jsonEncode(data)));
+      projectListMasterList.assignAll(bookingsFromJson(jsonEncode(data)));
+    } on Exception catch (_) {
+      log("ERROR: (getBookings) Something went wrong $_");
+    }
+  }
+
+  setAnotherUserToView({required String newuserid}) async {
+    LoadingDialog.showLoadingDialog();
+    selectedContentView.value = "Posts";
+    userid.value = newuserid;
+    getUserProfile();
+    getFinishedProjects();
+    Get.back();
+  }
+
   @override
   void onInit() async {
     userid.value = await Get.arguments['userid'];
     getUserProfile();
-
+    getFinishedProjects();
+    getCategories();
     super.onInit();
   }
 }

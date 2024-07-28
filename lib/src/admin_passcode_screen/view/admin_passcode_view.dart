@@ -35,6 +35,7 @@ class AdminPassCodeView extends GetView<AdminPassCodeController> {
           Container(
             alignment: Alignment.center,
             child: OtpTextField(
+              obscureText: true,
               numberOfFields: 6,
               borderColor: Colors.orange,
               disabledBorderColor: Colors.black,

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mediatooker/config/app_colors.dart';
 import 'package:mediatooker/services/notification_services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../model/bookings_model.dart';
 import '../../../services/getstorage_services.dart';
@@ -53,6 +54,9 @@ class UsersProjectListController extends GetxController {
           mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
           mapdata['date'] = mapdata['date'].toDate().toString();
           mapdata['time'] = mapdata['time'].toDate().toString();
+          if (mapdata.containsKey('remarks')) {
+            mapdata['remarks'] = mapdata['remarks'].toString();
+          }
           var providerDetails =
               await (mapdata['providerDocRef'] as DocumentReference).get();
           mapdata['providerName'] = providerDetails.get('name');
@@ -133,13 +137,13 @@ class UsersProjectListController extends GetxController {
     } catch (_) {}
   }
 
-  finishedProject({required String docid}) async {
+  finishedProject({required String docid, required String remarks}) async {
     LoadingDialog.showLoadingDialog();
     try {
       await FirebaseFirestore.instance
           .collection('bookings')
           .doc(docid)
-          .update({"status": "Finished"});
+          .update({"status": "Finished", "remarks": remarks});
 
       Get.back();
     } catch (_) {
@@ -147,17 +151,18 @@ class UsersProjectListController extends GetxController {
     }
   }
 
-  sendNotification({
-    required String fmcToken,
-    required String userid,
-    required String projectName,
-  }) async {
+  sendNotification(
+      {required String fmcToken,
+      required String userid,
+      required String projectName,
+      required String remarks}) async {
     try {
       String message = "";
       String title = "";
       String currentUsername = Get.find<StorageServices>().storage.read('name');
       title = "Project Notification";
-      message = "Your project $projectName is finished by $currentUsername";
+      message =
+          "Your project $projectName is finished by $currentUsername. $currentUsername said '$remarks'";
       await Get.find<NotificationServices>().sendNotification(
           userToken: fmcToken, message: message, title: title);
       await FirebaseFirestore.instance.collection('notifications').add({
@@ -174,6 +179,8 @@ class UsersProjectListController extends GetxController {
   rateUser(
       {required double userrating,
       required String userid,
+      required String projectName,
+      required String projectID,
       required String feedback}) async {
     try {
       Get.back();
@@ -184,6 +191,7 @@ class UsersProjectListController extends GetxController {
           .collection('ratings')
           .where('userid',
               isEqualTo: Get.find<StorageServices>().storage.read('id'))
+          .where('projectID', isEqualTo: projectID)
           .get();
       if (res.docs.isNotEmpty) {
         await FirebaseFirestore.instance
@@ -204,13 +212,24 @@ class UsersProjectListController extends GetxController {
           "userimage":
               Get.find<StorageServices>().storage.read('profilePicture'),
           "username": Get.find<StorageServices>().storage.read('name'),
-          "datecreated": Timestamp.now()
+          "datecreated": Timestamp.now(),
+          "projectID": projectID,
+          "projectName": projectName,
+          "replies": []
         });
       }
       Get.back();
       Get.snackbar("Message", "Thank you for providing feedback and rating.",
           backgroundColor: AppColors.orange, colorText: Colors.white);
     } catch (_) {}
+  }
+
+  callClient({required String contactNo}) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: "+63$contactNo",
+    );
+    await launchUrl(launchUri);
   }
 
   @override

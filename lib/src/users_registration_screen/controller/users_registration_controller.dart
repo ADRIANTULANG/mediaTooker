@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:mediatooker/config/app_colors.dart';
 import 'package:mediatooker/services/loading_dialog.dart';
 
+import '../../../services/categories_model.dart';
 import '../../../services/constant_strings.dart';
 
 class UsersRegistrationViewController extends GetxController {
@@ -24,6 +27,7 @@ class UsersRegistrationViewController extends GetxController {
 
   RxString dropDownValue = 'Client'.obs;
   RxString dropDownValueType = 'Individual'.obs;
+  List selectedCategories = [];
 
   RxString filepath = ''.obs;
   RxString filename = ''.obs;
@@ -32,6 +36,8 @@ class UsersRegistrationViewController extends GetxController {
   RxString useridFromGmail = ''.obs;
 
   RxBool showPass = true.obs;
+
+  RxList<CategoriesModel> categoriesList = <CategoriesModel>[].obs;
 
   signUpEmailUser() async {
     LoadingDialog.showLoadingDialog();
@@ -86,6 +92,7 @@ class UsersRegistrationViewController extends GetxController {
   saveUser({required String userid}) async {
     try {
       // UPLOAD TO STORAGE FIRST
+      String? token = await FirebaseMessaging.instance.getToken();
       Uint8List uint8list =
           Uint8List.fromList(File(filepath.value).readAsBytesSync());
 
@@ -107,7 +114,7 @@ class UsersRegistrationViewController extends GetxController {
         "coverPhoto": defaultCover,
         "name": name.text,
         "contactno": contactno.text,
-        "fcmToken": "",
+        "fcmToken": token,
         "documentLink": documentLink,
         "address": address.text,
         "isOnline": false,
@@ -116,7 +123,11 @@ class UsersRegistrationViewController extends GetxController {
         "accountType":
             dropDownValue.value == "Client" ? "" : dropDownValueType.value,
         "bio": "",
-        "restricted": false
+        "restricted": false,
+        "categories": selectedCategories,
+        "subscription": "free",
+        "bookings": 3,
+        "uploads": 3
       });
     } catch (e) {
       Get.snackbar(
@@ -138,11 +149,30 @@ class UsersRegistrationViewController extends GetxController {
     }
   }
 
+  getCategories() async {
+    try {
+      var res = await FirebaseFirestore.instance.collection('categories').get();
+      var categories = res.docs;
+      List tempdata = [];
+      for (var i = 0; i < categories.length; i++) {
+        Map mapdata = categories[i].data();
+        mapdata['id'] = categories[i].id;
+        mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
+        tempdata.add(mapdata);
+      }
+      categoriesList.assignAll(categoriesModelFromJson(jsonEncode(tempdata)));
+    } catch (_) {
+      Get.snackbar("Message", "Something went wrong please try again later",
+          backgroundColor: AppColors.orange, colorText: AppColors.dark);
+    }
+  }
+
   @override
   void onInit() async {
     provider.value = await Get.arguments['provider'];
     email.text = await Get.arguments['email'];
     useridFromGmail.value = await Get.arguments['useridFromGmail'];
+    getCategories();
     super.onInit();
   }
 }

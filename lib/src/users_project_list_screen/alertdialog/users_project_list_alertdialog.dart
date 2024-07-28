@@ -7,7 +7,10 @@ import 'package:mediatooker/src/users_project_list_screen/controller/users_proje
 import 'package:sizer/sizer.dart';
 
 class UsersProjectListAlertDialog {
-  static showRateUser({required String userid}) {
+  static showRateUser(
+      {required String userid,
+      required String projectID,
+      required String projectName}) {
     var controller = Get.find<UsersProjectListController>();
     TextEditingController feedback = TextEditingController();
     double selectedRating = 3.0;
@@ -89,9 +92,102 @@ class UsersProjectListAlertDialog {
                         onPressed: () {
                           if (feedback.text.isNotEmpty) {
                             controller.rateUser(
+                                projectName: projectName,
+                                projectID: projectID,
                                 feedback: feedback.text,
                                 userrating: selectedRating,
                                 userid: userid);
+                          }
+                        },
+                        child: const Text("Submit"))),
+              ],
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  static showRemarksDialog({
+    required String docid,
+    required UsersProjectListController controller,
+    required String fmcToken,
+    required String userid,
+    required String projectName,
+  }) {
+    TextEditingController remarks = TextEditingController();
+    Get.dialog(AlertDialog(
+      backgroundColor: Colors.white,
+      content: SizedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 1.h,
+            ),
+            Text(
+              "Remarks",
+              style: TextStyle(
+                  fontSize: AppFontSizes.large, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            SizedBox(
+              height: 15.h,
+              width: 100.w,
+              child: TextField(
+                controller: remarks,
+                style: TextStyle(fontSize: AppFontSizes.regular),
+                maxLines: 15,
+                decoration: InputDecoration(
+                  fillColor: AppColors.light,
+                  filled: true,
+                  contentPadding: EdgeInsets.only(left: 3.w, top: 2.h),
+                  alignLabelWithHint: false,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(3)),
+                  hintText:
+                      'Say something about this project. e.i reason why you accept this project...',
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                    width: 30.w,
+                    child: ElevatedButton(
+                        style: const ButtonStyle(
+                            foregroundColor:
+                                MaterialStatePropertyAll(AppColors.orange),
+                            backgroundColor:
+                                MaterialStatePropertyAll(AppColors.light)),
+                        onPressed: () {
+                          Get.back();
+                        },
+                        child: const Text("Cancel"))),
+                SizedBox(
+                    width: 30.w,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          if (remarks.text.trim().isNotEmpty) {
+                            Get.back();
+                            controller.finishedProject(
+                                docid: docid, remarks: remarks.text);
+                            controller.sendNotification(
+                              remarks: remarks.text,
+                              fmcToken: fmcToken,
+                              userid: userid,
+                              projectName: projectName,
+                            );
                           }
                         },
                         child: const Text("Submit"))),

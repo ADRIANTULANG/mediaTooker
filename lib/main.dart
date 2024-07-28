@@ -3,16 +3,23 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:mediatooker/config/app_colors.dart';
 import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/services/notification_services.dart';
 import 'package:mediatooker/src/users_chat_screen/controller/users_chat_controller.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sizer/sizer.dart';
 import 'src/splash_screen/view/splash_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await [
+    Permission.storage,
+    Permission.manageExternalStorage,
+    Permission.accessMediaLocation
+  ].request();
   await Firebase.initializeApp(
       options: const FirebaseOptions(
           apiKey: 'AIzaSyAkgdXfBxQkRcrWqYW4dIaYAs5fzhVe-O4',
@@ -22,7 +29,9 @@ void main() async {
           projectId: 'media-tooker-7ec79'));
   await Get.putAsync<NotificationServices>(() async => NotificationServices());
   await Get.putAsync<StorageServices>(() async => StorageServices());
-
+  Stripe.publishableKey =
+      'pk_test_51PRVcfRpZUkGY2RJvDT0DcpspQKHDjlKtE4WBUlRPVJVE9jjAJrRBIqfIw20sFK61cecI2U34BGTTQwSqv658eLk00q6qW8TSy';
+  await Stripe.instance.applySettings();
   runApp(const MyApp());
 }
 

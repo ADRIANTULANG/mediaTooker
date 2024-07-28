@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mediatooker/src/admin_approval_screen/controller/admin_approval_controller.dart';
 import 'package:mediatooker/src/admin_bottom_nav_screen/controller/admin_bottom_nav_controller.dart';
+import 'package:mediatooker/src/admin_categories_screen/controller/admin_categories_controller.dart';
+import 'package:mediatooker/src/admin_income_screen/controller/admin_income_controller.dart';
+import 'package:mediatooker/src/admin_reports_screen/controller/admin_reports_controller.dart';
 import 'package:mediatooker/src/admin_users_list_screen/controller/admin_users_list_controller.dart';
 import 'package:sizer/sizer.dart';
 
@@ -20,6 +23,10 @@ class _AdminBottomNavViewState extends State<AdminBottomNavView> {
   void initState() {
     Get.put(AdminApprovalController());
     Get.put(AdminUsersListController());
+    Get.put(AdminReportsController());
+    Get.put(AdminIncomeController());
+    Get.put(AdminCategoriesController());
+
     super.initState();
   }
 
@@ -36,6 +43,21 @@ class _AdminBottomNavViewState extends State<AdminBottomNavView> {
             // showUnselectedLabels: false,
             onDestinationSelected: (index) {
               controller.currentSelectedIndex.value = index;
+              if (index == 0) {
+                Get.find<AdminApprovalController>().getPendingUsers();
+              }
+              if (index == 1) {
+                Get.find<AdminReportsController>().getReportedUsers();
+              }
+              if (index == 2) {
+                Get.find<AdminUsersListController>().getUsers();
+              }
+              if (index == 3) {
+                Get.find<AdminIncomeController>().getPayments();
+              }
+              if (index == 4) {
+                Get.find<AdminCategoriesController>().getCategories();
+              }
             },
             elevation: 20,
             selectedIndex: controller.currentSelectedIndex.value,
@@ -54,6 +76,17 @@ class _AdminBottomNavViewState extends State<AdminBottomNavView> {
                   label: "Approval"),
               NavigationDestination(
                   selectedIcon: Icon(
+                    Icons.report,
+                    size: 20.sp,
+                    color: AppColors.orange,
+                  ),
+                  icon: Icon(
+                    Icons.report,
+                    size: 20.sp,
+                  ),
+                  label: "Reports"),
+              NavigationDestination(
+                  selectedIcon: Icon(
                     Icons.group,
                     size: 20.sp,
                     color: AppColors.orange,
@@ -63,6 +96,28 @@ class _AdminBottomNavViewState extends State<AdminBottomNavView> {
                     size: 20.sp,
                   ),
                   label: "Users"),
+              NavigationDestination(
+                  selectedIcon: Icon(
+                    Icons.bar_chart,
+                    size: 20.sp,
+                    color: AppColors.orange,
+                  ),
+                  icon: Icon(
+                    Icons.bar_chart,
+                    size: 20.sp,
+                  ),
+                  label: "Income"),
+              NavigationDestination(
+                  selectedIcon: Icon(
+                    Icons.category,
+                    size: 20.sp,
+                    color: AppColors.orange,
+                  ),
+                  icon: Icon(
+                    Icons.category,
+                    size: 20.sp,
+                  ),
+                  label: "Categories"),
             ]),
       ),
     );

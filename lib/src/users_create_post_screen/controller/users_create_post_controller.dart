@@ -11,10 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/src/users_home_screen/controller/users_home_controller.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_compress/video_compress.dart';
 
+import '../../../config/app_colors.dart';
 import '../../../services/loading_dialog.dart';
 
 class UserCreatePostController extends GetxController {
@@ -29,8 +31,13 @@ class UserCreatePostController extends GetxController {
 
   File? pickedile;
 
+  RxString currentSubscription = ''.obs;
+  RxInt currentUpload = 0.obs;
+  RxInt currentBooking = 0.obs;
+
   @override
   void onInit() async {
+    await getSubscriptions();
     filepath.value = await Get.arguments['filepath'];
     fileName.value = await Get.arguments['fileName'];
     extension.value = await Get.arguments['extension'];
@@ -93,86 +100,121 @@ class UserCreatePostController extends GetxController {
     isPlaying.value = false;
   }
 
+  getSubscriptions() async {
+    try {
+      var user = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(Get.find<StorageServices>().storage.read('id'))
+          .get();
+      if (user.exists) {
+        currentSubscription.value =
+            user['subscription'].toString().capitalizeFirst.toString();
+        currentUpload.value = user['uploads'];
+        currentBooking.value = user['bookings'];
+      }
+    } catch (_) {
+      log("ERROR (getSubscriptions): Something went wrong ${_.toString()}");
+    }
+  }
+
   createPost() async {
     try {
       LoadingDialog.showLoadingDialog();
-      String type = '';
-      String fileLink = '';
-      if (isWithFile.value) {
-        if (['jpg', 'png', 'jpeg', 'svg', 'bmp'].contains(extension.value)) {
-          type = 'image';
+
+      if (currentUpload.value > 0) {
+        String type = '';
+        String fileLink = '';
+        if (isWithFile.value) {
+          if (['jpg', 'png', 'jpeg', 'svg', 'bmp'].contains(extension.value)) {
+            type = 'image';
+          } else {
+            type = 'video';
+          }
+          // COMPRESSED FILE IF VIDEO
+          if (type == "video") {
+            MediaInfo? mediaInfo = await VideoCompress.compressVideo(
+              filepath.value,
+              quality: VideoQuality.Res640x480Quality,
+              deleteOrigin: false, // It's false by default
+            );
+            File? compressedVideo = mediaInfo!.file;
+            // filepath.value = compressedVideo!.path;
+            String inputPath = compressedVideo!.path;
+
+            final Directory tempDir = await getTemporaryDirectory();
+            String outputPath = '${tempDir.path}/compressedvideo.mp4';
+            log("$outputPath path directory");
+            String command =
+                '-y -i $inputPath -vcodec libx264 -crf 22 $outputPath';
+
+            // String command = '-y -i $inputPath -c:v libx264 -crf 24 $outputPath';
+            FFmpegKit.execute(command).then((session) async {
+              final returnCode = await session.getReturnCode();
+
+              if (ReturnCode.isSuccess(returnCode)) {
+                filepath.value = outputPath;
+                log("SUCCESS COMPRESSED");
+              } else if (ReturnCode.isCancel(returnCode)) {
+                // CANCEL
+                log("CANCEL COMPRESSED");
+              } else {
+                // ERROR
+                String message = '';
+                FFmpegKitConfig.enableLogCallback((log) {
+                  message = log.getMessage();
+                  // print("${message}mao ni error");
+                });
+                log(message);
+                filepath.value = outputPath;
+              }
+            });
+          }
+          Uint8List uint8list =
+              Uint8List.fromList(File(filepath.value).readAsBytesSync());
+          final ref =
+              FirebaseStorage.instance.ref().child("post/${fileName.value}");
+
+          var uploadTask = type == 'image'
+              ? ref.putData(uint8list)
+              : ref.putFile(pickedile!);
+          final snapshot = await uploadTask.whenComplete(() {});
+          fileLink = await snapshot.ref.getDownloadURL();
         } else {
-          type = 'video';
+          type = 'text';
         }
-        // COMPRESSED FILE IF VIDEO
-        if (type == "video") {
-          MediaInfo? mediaInfo = await VideoCompress.compressVideo(
-            filepath.value,
-            quality: VideoQuality.Res640x480Quality,
-            deleteOrigin: false, // It's false by default
-          );
-          File? compressedVideo = mediaInfo!.file;
-          // filepath.value = compressedVideo!.path;
-          String inputPath = compressedVideo!.path;
-
-          final Directory tempDir = await getTemporaryDirectory();
-          String outputPath = '${tempDir.path}/compressedvideo.mp4';
-          log("$outputPath path directory");
-          String command =
-              '-y -i $inputPath -vcodec libx264 -crf 22 $outputPath';
-
-          // String command = '-y -i $inputPath -c:v libx264 -crf 24 $outputPath';
-          FFmpegKit.execute(command).then((session) async {
-            final returnCode = await session.getReturnCode();
-
-            if (ReturnCode.isSuccess(returnCode)) {
-              filepath.value = outputPath;
-              log("SUCCESS COMPRESSED");
-            } else if (ReturnCode.isCancel(returnCode)) {
-              // CANCEL
-              log("CANCEL COMPRESSED");
-            } else {
-              // ERROR
-              String message = '';
-              FFmpegKitConfig.enableLogCallback((log) {
-                message = log.getMessage();
-                // print("${message}mao ni error");
-              });
-              log(message);
-              filepath.value = outputPath;
-            }
-          });
-        }
-        Uint8List uint8list =
-            Uint8List.fromList(File(filepath.value).readAsBytesSync());
-        final ref =
-            FirebaseStorage.instance.ref().child("post/${fileName.value}");
-
-        var uploadTask =
-            type == 'image' ? ref.putData(uint8list) : ref.putFile(pickedile!);
-        final snapshot = await uploadTask.whenComplete(() {});
-        fileLink = await snapshot.ref.getDownloadURL();
+        var userid = FirebaseAuth.instance.currentUser!.uid;
+        var docref = FirebaseFirestore.instance.collection('users').doc(userid);
+        await FirebaseFirestore.instance.collection('post').add({
+          "userdocref": docref,
+          "userID": userid,
+          "type": type,
+          "url": fileLink,
+          "textpost": textPost.text,
+          "likes": [],
+          "datecreated": Timestamp.now(),
+          "isShared": false,
+          "originalUserDocRef": docref,
+          "originalUserID": userid,
+          "originalUserTextPost": textPost.text,
+        });
+        Get.back();
+        Get.back();
+        Get.find<UsersHomeViewController>().getPost();
+        int newUploadCount = currentUpload.value - 1;
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(Get.find<StorageServices>().storage.read('id'))
+            .update({
+          "uploads": newUploadCount,
+        });
       } else {
-        type = 'text';
+        Get.back();
+        Get.snackbar("Message",
+            "You have no upload/post points left to upload or post. Subscribe to upload/post content.",
+            duration: const Duration(seconds: 6),
+            backgroundColor: AppColors.orange,
+            colorText: AppColors.light);
       }
-      var userid = FirebaseAuth.instance.currentUser!.uid;
-      var docref = FirebaseFirestore.instance.collection('users').doc(userid);
-      await FirebaseFirestore.instance.collection('post').add({
-        "userdocref": docref,
-        "userID": userid,
-        "type": type,
-        "url": fileLink,
-        "textpost": textPost.text,
-        "likes": [],
-        "datecreated": Timestamp.now(),
-        "isShared": false,
-        "originalUserDocRef": docref,
-        "originalUserID": userid,
-        "originalUserTextPost": textPost.text,
-      });
-      Get.back();
-      Get.back();
-      Get.find<UsersHomeViewController>().getPost();
     } catch (_) {
       log("ERROR: Something went wrong $_");
     }

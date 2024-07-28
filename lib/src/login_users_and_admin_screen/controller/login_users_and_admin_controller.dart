@@ -135,9 +135,9 @@ class LoginViewController extends GetxController {
       }
     } catch (e) {
       Get.back();
-      Get.snackbar("Message",
-          "Sign in failed, something went wrong please try again later.",
-          backgroundColor: AppColors.orange, colorText: Colors.white);
+      // Get.snackbar("Message",
+      //     "Sign in failed, something went wrong please try again later.",
+      //     backgroundColor: AppColors.orange, colorText: Colors.white);
       log(e.toString());
     }
   }

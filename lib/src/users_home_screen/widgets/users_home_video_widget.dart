@@ -36,17 +36,17 @@ class _UsersHomeVideoWidgetState extends State<UsersHomeVideoWidget> {
           SizedBox(
             height: 30.h,
             width: 100.w,
-            child: NativeVideoPlayerView(
-              onViewReady: (controller) async {
-                vController = controller;
-                final videoSource = await VideoSource.init(
-                  path: widget.url,
-                  type: VideoSourceType.network,
-                );
-                await controller.loadVideoSource(videoSource);
-                listenToController();
-              },
-            ),
+            // child: NativeVideoPlayerView(
+            //   onViewReady: (controller) async {
+            //     vController = controller;
+            //     final videoSource = await VideoSource.init(
+            //       path: widget.url,
+            //       type: VideoSourceType.network,
+            //     );
+            //     await controller.loadVideoSource(videoSource);
+            //     listenToController();
+            //   },
+            // ),
           ),
           Positioned(
             right: 41.w,

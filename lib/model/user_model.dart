@@ -33,6 +33,8 @@ class User {
   bool restricted;
   RxBool isDownloading;
   RxDouble progress;
+  List<String> categories;
+  String? rating;
 
   User({
     required this.address,
@@ -55,6 +57,8 @@ class User {
     required this.progress,
     required this.accountType,
     required this.restricted,
+    required this.categories,
+    this.rating,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -78,6 +82,8 @@ class User {
         restricted: json["restricted"],
         id: json["id"],
         accountType: json["accountType"],
+        rating: json["rating"],
+        categories: List<String>.from(json["categories"].map((x) => x)),
       );
 
   Map<String, dynamic> toJson() => {
@@ -101,5 +107,6 @@ class User {
         "status": status,
         "contactno": contactno,
         "id": id,
+        "categories": List<dynamic>.from(categories.map((x) => x)),
       };
 }

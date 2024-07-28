@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:mediatooker/src/users_notification_screen/controller/users_notification_controller.dart';
@@ -28,13 +29,14 @@ class NotificationServices extends GetxService {
         "subtitle": "",
       }
     });
-    await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+    var res = await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
         headers: {
           "Authorization":
               "key=AAAAQB5bA-4:APA91bEPn_EAjqr1kCuorEIIbbsuTpMJb1RV9sjZg5J_4uft4F7MViTrGiIqWNENpB3mYtzTtWznqOwOrVzYpgUCY4rhxA6lQgWT6BRbhMtAErOuTQZ6-_C6vHZRYPe5Bg5csdcrAEtM",
           "Content-Type": "application/json"
         },
         body: body);
+    debugPrint("NOTIFICATION STATUS: ${res.statusCode.toString()}");
   }
 
   Future<void> notificationSetup() async {

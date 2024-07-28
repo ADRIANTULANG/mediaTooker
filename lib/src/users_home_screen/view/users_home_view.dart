@@ -27,6 +27,7 @@ class UsersHomeView extends GetView<UsersHomeViewController> {
               controller.refreshView();
             },
             child: SingleChildScrollView(
+              controller: controller.scrollController,
               child: Column(
                 children: [
                   SizedBox(
@@ -127,292 +128,345 @@ class UsersHomeView extends GetView<UsersHomeViewController> {
                   ),
                   SizedBox(
                     child: Obx(
-                      () => ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: controller.postList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                height: 2.h,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                      () => controller.postList.isEmpty
+                          ? SizedBox(
+                              width: 100.w,
+                              height: 60.h,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Row(
-                                      children: [
-                                        CachedNetworkImage(
-                                          imageUrl: controller.postList[index]
-                                              .sharerProfilePicture,
-                                          imageBuilder:
-                                              (context, imageProvider) =>
-                                                  CircleAvatar(
-                                            radius: 5.5.w,
-                                            backgroundColor: AppColors.dark,
-                                            child: CircleAvatar(
-                                              radius: 5.w,
-                                              backgroundImage: imageProvider,
-                                            ),
-                                          ),
-                                          placeholder: (context, url) =>
-                                              CircleAvatar(
-                                            radius: 5.5.w,
-                                            backgroundColor: AppColors.dark,
-                                            child: CircleAvatar(
-                                              radius: 5.w,
-                                              backgroundColor: AppColors.light,
-                                            ),
-                                          ),
-                                          errorWidget: (context, url, error) =>
-                                              CircleAvatar(
-                                            radius: 5.5.w,
-                                            backgroundColor: AppColors.dark,
-                                            child: CircleAvatar(
-                                              radius: 5.w,
-                                              backgroundColor: AppColors.light,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 2.w,
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                Get.to(
-                                                    () =>
-                                                        const UsersProfileView(),
-                                                    arguments: {
-                                                      "userid": controller
-                                                          .postList[index]
-                                                          .userId
-                                                    });
-                                              },
-                                              child: Text(
-                                                controller
-                                                    .postList[index].sharerName,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize:
-                                                      AppFontSizes.regular,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              "${DateFormat.yMMMd().format(controller.postList[index].datecreated)} ${DateFormat.jm().format(controller.postList[index].datecreated)}",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.normal,
-                                                fontSize: AppFontSizes.small,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                    Container(
+                                      height: 20.h,
+                                      width: 100.w,
+                                      decoration: const BoxDecoration(
+                                          image: DecorationImage(
+                                              image: AssetImage(
+                                                  'assets/images/logo.png'))),
+                                    ),
+                                    Text(
+                                      "No available posts.",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: AppFontSizes.regular),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                height:
-                                    controller.postList[index].textpost == ""
-                                        ? 1.h
-                                        : 2.h,
-                              ),
-                              controller.postList[index].textpost == ""
-                                  ? const SizedBox()
-                                  : Padding(
+                            )
+                          : ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: controller.postList.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: 2.h,
+                                    ),
+                                    Padding(
                                       padding: EdgeInsets.only(
                                           left: 5.w, right: 5.w),
-                                      child: Text(
-                                        controller.postList[index].textpost,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.normal,
-                                            fontSize: AppFontSizes.regular),
-                                      ),
-                                    ),
-                              SizedBox(
-                                height: 1.h,
-                              ),
-                              controller.postList[index].isShared
-                                  ? const Divider()
-                                  : const SizedBox(),
-                              controller.postList[index].isShared
-                                  ? UsersHomeSharedPostWidget(index: index)
-                                  : const SizedBox(),
-                              SizedBox(
-                                height: 2.h,
-                              ),
-                              controller.postList[index].type == 'video'
-                                  ? UsersHomeVideoWidget(
-                                      index: index,
-                                      url: controller.postList[index].url,
-                                    )
-                                  : controller.postList[index].type == 'image'
-                                      ? UsersHomeImageWidget(index: index)
-                                      : const SizedBox(),
-                              SizedBox(
-                                height:
-                                    controller.postList[index].type == "text"
-                                        ? 0.h
-                                        : 1.h,
-                              ),
-                              const Divider(),
-                              SizedBox(
-                                height: 1.h,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        controller.callUser(
-                                            contactno:
-                                                "+63${controller.postList[index].contactno}");
-                                      },
-                                      child: Icon(
-                                        Icons.call,
-                                        color: AppColors.orange,
-                                        size: 23.sp,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        controller.getComments(
-                                            userid: controller
-                                                    .postList[index].isShared
-                                                ? controller
-                                                    .postList[index].sharerId
-                                                : controller
-                                                    .postList[index].userId,
-                                            fcmToken: controller
-                                                    .postList[index].isShared
-                                                ? controller.postList[index]
-                                                    .sharerFcmToken
-                                                : controller.postList[index]
-                                                    .userFcmToken,
-                                            postID:
-                                                controller.postList[index].id);
-                                      },
-                                      child: Icon(
-                                        Icons.comment,
-                                        color: AppColors.orange,
-                                        size: 23.sp,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Obx(
-                                      () => controller
-                                              .postList[index].isLike.value
-                                          ? GestureDetector(
-                                              onTap: () {
-                                                controller.unlikePost(
-                                                    index: index,
-                                                    isLike: controller
-                                                        .postList[index]
-                                                        .isLike
-                                                        .value);
-                                              },
-                                              child: Icon(
-                                                Icons.thumb_up_rounded,
-                                                color: AppColors.orange,
-                                                size: 23.sp,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              CachedNetworkImage(
+                                                imageUrl: controller
+                                                    .postList[index]
+                                                    .sharerProfilePicture,
+                                                imageBuilder:
+                                                    (context, imageProvider) =>
+                                                        CircleAvatar(
+                                                  radius: 5.5.w,
+                                                  backgroundColor:
+                                                      AppColors.dark,
+                                                  child: CircleAvatar(
+                                                    radius: 5.w,
+                                                    backgroundImage:
+                                                        imageProvider,
+                                                  ),
+                                                ),
+                                                placeholder: (context, url) =>
+                                                    CircleAvatar(
+                                                  radius: 5.5.w,
+                                                  backgroundColor:
+                                                      AppColors.dark,
+                                                  child: CircleAvatar(
+                                                    radius: 5.w,
+                                                    backgroundColor:
+                                                        AppColors.light,
+                                                  ),
+                                                ),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        CircleAvatar(
+                                                  radius: 5.5.w,
+                                                  backgroundColor:
+                                                      AppColors.dark,
+                                                  child: CircleAvatar(
+                                                    radius: 5.w,
+                                                    backgroundColor:
+                                                        AppColors.light,
+                                                  ),
+                                                ),
                                               ),
-                                            )
-                                          : GestureDetector(
-                                              onTap: () {
-                                                controller.likePost(
-                                                    index: index,
-                                                    isLike: controller
+                                              SizedBox(
+                                                width: 2.w,
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      Get.to(
+                                                          () =>
+                                                              const UsersProfileView(),
+                                                          arguments: {
+                                                            "userid": controller
+                                                                .postList[index]
+                                                                .userId
+                                                          });
+                                                    },
+                                                    child: Text(
+                                                      controller.postList[index]
+                                                          .sharerName,
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: AppFontSizes
+                                                            .regular,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "${DateFormat.yMMMd().format(controller.postList[index].datecreated)} ${DateFormat.jm().format(controller.postList[index].datecreated)}",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize:
+                                                          AppFontSizes.small,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height:
+                                          controller.postList[index].textpost ==
+                                                  ""
+                                              ? 1.h
+                                              : 2.h,
+                                    ),
+                                    controller.postList[index].textpost == ""
+                                        ? const SizedBox()
+                                        : Padding(
+                                            padding: EdgeInsets.only(
+                                                left: 5.w, right: 5.w),
+                                            child: Text(
+                                              controller
+                                                  .postList[index].textpost,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize:
+                                                      AppFontSizes.regular),
+                                            ),
+                                          ),
+                                    SizedBox(
+                                      height: 1.h,
+                                    ),
+                                    controller.postList[index].isShared
+                                        ? const Divider()
+                                        : const SizedBox(),
+                                    controller.postList[index].isShared
+                                        ? UsersHomeSharedPostWidget(
+                                            index: index)
+                                        : const SizedBox(),
+                                    SizedBox(
+                                      height: 2.h,
+                                    ),
+                                    controller.postList[index].type == 'video'
+                                        ? UsersHomeVideoWidget(
+                                            index: index,
+                                            url: controller.postList[index].url,
+                                          )
+                                        : controller.postList[index].type ==
+                                                'image'
+                                            ? UsersHomeImageWidget(index: index)
+                                            : const SizedBox(),
+                                    SizedBox(
+                                      height: controller.postList[index].type ==
+                                              "text"
+                                          ? 0.h
+                                          : 1.h,
+                                    ),
+                                    const Divider(),
+                                    SizedBox(
+                                      height: 1.h,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Expanded(
+                                        //   child: GestureDetector(
+                                        //     onTap: () {
+                                        //       controller.callUser(
+                                        //           contactno:
+                                        //               "+63${controller.postList[index].contactno}");
+                                        //     },
+                                        //     child: Icon(
+                                        //       Icons.call,
+                                        //       color: AppColors.orange,
+                                        //       size: 23.sp,
+                                        //     ),
+                                        //   ),
+                                        // ),
+
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Get.to(
+                                                  () =>
+                                                      const UsersSharePostViewPage(),
+                                                  arguments: {
+                                                    "filetype": controller
+                                                        .postList[index].type,
+                                                    "url": controller
+                                                        .postList[index].url,
+                                                    "userName": controller
+                                                        .postList[index].name,
+                                                    "profilePicture": controller
                                                         .postList[index]
-                                                        .isLike
-                                                        .value);
-                                                controller.sendNotification(
-                                                    userid: controller
+                                                        .profilePicture,
+                                                    "postID": controller
+                                                        .postList[index].id,
+                                                    "originalCaption": controller
+                                                        .postList[index]
+                                                        .originalUserTextPost,
+                                                    "originalUserID": controller
                                                         .postList[index]
                                                         .originalUserId,
-                                                    fmcToken: controller
-                                                        .postList[index]
-                                                        .userFcmToken,
-                                                    action: "like");
-                                                if (controller
-                                                    .postList[index].isShared) {
-                                                  controller.sendNotification(
-                                                      userid: controller
-                                                          .postList[index]
-                                                          .sharerId,
-                                                      fmcToken: controller
-                                                          .postList[index]
-                                                          .sharerFcmToken,
-                                                      action: "shared");
-                                                }
-                                              },
-                                              child: Icon(
-                                                Icons.thumb_up_alt_outlined,
-                                                color: AppColors.orange,
-                                                size: 23.sp,
-                                              ),
+                                                  });
+                                            },
+                                            child: Icon(
+                                              Icons.ios_share,
+                                              color: AppColors.orange,
+                                              size: 23.sp,
                                             ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              controller.getComments(
+                                                  userid: controller
+                                                          .postList[index]
+                                                          .isShared
+                                                      ? controller
+                                                          .postList[index]
+                                                          .sharerId
+                                                      : controller
+                                                          .postList[index]
+                                                          .userId,
+                                                  fcmToken: controller
+                                                          .postList[index]
+                                                          .isShared
+                                                      ? controller
+                                                          .postList[index]
+                                                          .sharerFcmToken
+                                                      : controller
+                                                          .postList[index]
+                                                          .userFcmToken,
+                                                  postID: controller
+                                                      .postList[index].id);
+                                            },
+                                            child: Icon(
+                                              Icons.comment,
+                                              color: AppColors.orange,
+                                              size: 23.sp,
+                                            ),
+                                          ),
+                                        ),
+
+                                        Expanded(
+                                          child: Obx(
+                                            () => controller.postList[index]
+                                                    .isLike.value
+                                                ? GestureDetector(
+                                                    onTap: () {
+                                                      controller.unlikePost(
+                                                          index: index,
+                                                          isLike: controller
+                                                              .postList[index]
+                                                              .isLike
+                                                              .value);
+                                                    },
+                                                    child: Icon(
+                                                      Icons.thumb_up_rounded,
+                                                      color: AppColors.orange,
+                                                      size: 23.sp,
+                                                    ),
+                                                  )
+                                                : GestureDetector(
+                                                    onTap: () {
+                                                      controller.likePost(
+                                                          index: index,
+                                                          isLike: controller
+                                                              .postList[index]
+                                                              .isLike
+                                                              .value);
+                                                      controller.sendNotification(
+                                                          userid: controller
+                                                              .postList[index]
+                                                              .originalUserId,
+                                                          fmcToken: controller
+                                                              .postList[index]
+                                                              .userFcmToken,
+                                                          action: "like");
+                                                      if (controller
+                                                          .postList[index]
+                                                          .isShared) {
+                                                        controller.sendNotification(
+                                                            userid: controller
+                                                                .postList[index]
+                                                                .sharerId,
+                                                            fmcToken: controller
+                                                                .postList[index]
+                                                                .sharerFcmToken,
+                                                            action: "shared");
+                                                      }
+                                                    },
+                                                    child: Icon(
+                                                      Icons
+                                                          .thumb_up_alt_outlined,
+                                                      color: AppColors.orange,
+                                                      size: 23.sp,
+                                                    ),
+                                                  ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Get.to(
-                                            () =>
-                                                const UsersSharePostViewPage(),
-                                            arguments: {
-                                              "filetype": controller
-                                                  .postList[index].type,
-                                              "url": controller
-                                                  .postList[index].url,
-                                              "userName": controller
-                                                  .postList[index].name,
-                                              "profilePicture": controller
-                                                  .postList[index]
-                                                  .profilePicture,
-                                              "postID":
-                                                  controller.postList[index].id,
-                                              "originalCaption": controller
-                                                  .postList[index]
-                                                  .originalUserTextPost,
-                                              "originalUserID": controller
-                                                  .postList[index]
-                                                  .originalUserId,
-                                            });
-                                      },
-                                      child: Icon(
-                                        Icons.ios_share,
-                                        color: AppColors.orange,
-                                        size: 23.sp,
-                                      ),
+                                    SizedBox(
+                                      height: 2.h,
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 2.h,
-                              ),
-                              Container(
-                                height: 1.h,
-                                color: AppColors.light,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
+                                    Container(
+                                      height: 1.h,
+                                      color: AppColors.light,
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                     ),
                   )
                 ],

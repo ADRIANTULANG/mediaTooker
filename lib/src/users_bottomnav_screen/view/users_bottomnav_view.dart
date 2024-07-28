@@ -10,6 +10,7 @@ import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/services/loading_dialog.dart';
 import 'package:mediatooker/src/login_users_and_admin_screen/view/login_users_and_admin_view.dart';
 import 'package:mediatooker/src/users_search_screen/view/users_search_view.dart';
+import 'package:mediatooker/src/users_subscription_screen/view/users_subscription_view.dart';
 import 'package:sizer/sizer.dart';
 import '../../users_bookings_request_screen/controller/users_booking_request_controller.dart';
 import '../../users_home_screen/controller/users_home_controller.dart';
@@ -42,6 +43,19 @@ class UsersBottomNavView extends GetView<UsersBottomNavViewController> {
                 fontSize: AppFontSizes.extraLarge),
           ),
           actions: [
+            GestureDetector(
+              onTap: () async {
+                Get.to(() => const UserSubscriptionView());
+              },
+              child: Icon(
+                Icons.subscriptions_rounded,
+                color: AppColors.orange,
+                size: 23.sp,
+              ),
+            ),
+            SizedBox(
+              width: 4.w,
+            ),
             GestureDetector(
               onTap: () async {
                 Get.to(() => const UsersSearchPage());

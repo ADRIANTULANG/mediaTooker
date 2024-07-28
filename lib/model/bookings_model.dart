@@ -31,6 +31,8 @@ class Bookings {
   String clientFcmToken;
   bool isSeenByClient;
   bool isSeenByProvider;
+  String? clientRating;
+  String? remarks;
 
   Bookings({
     required this.date,
@@ -57,6 +59,8 @@ class Bookings {
     required this.isSeenByProvider,
     required this.clientFcmToken,
     required this.providerFcmToken,
+    this.clientRating,
+    this.remarks,
   });
 
   factory Bookings.fromJson(Map<String, dynamic> json) => Bookings(
@@ -84,6 +88,8 @@ class Bookings {
         clientProfilePic: json["clientProfilePic"],
         clientAddress: json["clientAddress"],
         clientContact: json["clientContact"],
+        clientRating: json["clientRating"],
+        remarks: json["remarks"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -111,5 +117,6 @@ class Bookings {
         "clientProfilePic": clientProfilePic,
         "clientAddress": clientAddress,
         "clientContact": clientContact,
+        "remarks": remarks,
       };
 }

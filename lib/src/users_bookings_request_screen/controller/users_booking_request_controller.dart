@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mediatooker/config/app_colors.dart';
 import 'package:mediatooker/model/bookings_model.dart';
 import 'package:mediatooker/services/getstorage_services.dart';
 import 'package:mediatooker/services/loading_dialog.dart';
@@ -19,6 +20,27 @@ class UsersBookingRequestController extends GetxController {
       Get.find<StorageServices>().storage.read('type').toString().obs;
 
   Timer? debouncer;
+
+  RxString currentSubscription = ''.obs;
+  RxInt currentUpload = 0.obs;
+  RxInt currentBooking = 0.obs;
+
+  getSubscriptions() async {
+    try {
+      var user = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(Get.find<StorageServices>().storage.read('id'))
+          .get();
+      if (user.exists) {
+        currentSubscription.value =
+            user['subscription'].toString().capitalizeFirst.toString();
+        currentUpload.value = user['uploads'];
+        currentBooking.value = user['bookings'];
+      }
+    } catch (_) {
+      log("ERROR (getSubscriptions): Something went wrong ${_.toString()}");
+    }
+  }
 
   getBookings() async {
     try {
@@ -48,6 +70,10 @@ class UsersBookingRequestController extends GetxController {
         mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
         mapdata['date'] = mapdata['date'].toDate().toString();
         mapdata['time'] = mapdata['time'].toDate().toString();
+
+        if (mapdata.containsKey('remarks')) {
+          mapdata['remarks'] = mapdata['remarks'].toString();
+        }
 
         var providerDetails =
             await (mapdata['providerDocRef'] as DocumentReference).get();
@@ -130,24 +156,40 @@ class UsersBookingRequestController extends GetxController {
   acceptProject({required String docid}) async {
     LoadingDialog.showLoadingDialog();
     try {
-      await FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(docid)
-          .update({"status": "Ongoing", "accepted": true});
-      getBookings();
-      Get.back();
+      if (currentBooking.value > 0) {
+        await FirebaseFirestore.instance
+            .collection('bookings')
+            .doc(docid)
+            .update({"status": "Ongoing", "accepted": true});
+        getBookings();
+        Get.back();
+        int newBookingCount = currentBooking.value - 1;
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(Get.find<StorageServices>().storage.read('id'))
+            .update({
+          "bookings": newBookingCount,
+        });
+      } else {
+        Get.back();
+        Get.snackbar("Message",
+            "You have no booking points left to accept a project. Subscribe to get points and accept more projects.",
+            duration: const Duration(seconds: 6),
+            backgroundColor: AppColors.orange,
+            colorText: AppColors.light);
+      }
     } catch (_) {
       log("ERROR: (acceptProject) Something went wrong $_");
     }
   }
 
-  rejectProject({required String docid}) async {
+  rejectProject({required String docid, required String remarks}) async {
     LoadingDialog.showLoadingDialog();
     try {
       await FirebaseFirestore.instance
           .collection('bookings')
           .doc(docid)
-          .update({"status": "Rejected"});
+          .update({"status": "Rejected", "remarks": remarks});
       getBookings();
       Get.back();
     } catch (_) {
@@ -160,17 +202,20 @@ class UsersBookingRequestController extends GetxController {
     required String action,
     required String userid,
     required String projectName,
+    required String remarks,
   }) async {
     try {
+      log("FCM TOKEN::: $fmcToken");
       String message = "";
       String title = "";
       String currentUsername = Get.find<StorageServices>().storage.read('name');
       title = "Booking Notification";
       if (action == "Reject") {
-        message = "Your project $projectName is rejected by $currentUsername";
+        message =
+            "Your project $projectName is rejected by $currentUsername. $currentUsername said '$remarks'";
       }
       if (action == "Accept") {
-        message = "Your project $projectName is accepted by $currentUsername";
+        message = "Your project $projectName is accepted by $currentUsername.";
       }
       await Get.find<NotificationServices>().sendNotification(
           userToken: fmcToken, message: message, title: title);
@@ -186,8 +231,10 @@ class UsersBookingRequestController extends GetxController {
   }
 
   @override
-  void onInit() {
+  void onInit() async {
+    await getSubscriptions();
     getBookings();
+
     super.onInit();
   }
 }
