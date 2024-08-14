@@ -185,12 +185,40 @@ class UsersSearchPage extends GetView<UserSearchController> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              controller.usersList[index].name,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: AppFontSizes.regular,
-                                              ),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  controller
+                                                      .usersList[index].name,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize:
+                                                        AppFontSizes.regular,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: 1.w,
+                                                ),
+                                                Text(
+                                                  controller.usersList[index]
+                                                              .rating ==
+                                                          null
+                                                      ? "0"
+                                                      : controller
+                                                          .usersList[index]
+                                                          .rating!,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize:
+                                                          AppFontSizes.regular),
+                                                ),
+                                                Icon(
+                                                  Icons.star,
+                                                  color: Colors.yellow,
+                                                  size: 15.sp,
+                                                )
+                                              ],
                                             ),
                                             Text(
                                               controller.usersList[index]

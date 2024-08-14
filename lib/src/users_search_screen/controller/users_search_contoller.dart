@@ -26,11 +26,28 @@ class UserSearchController extends GetxController {
         Map mapdata = users[i].data();
         mapdata['id'] = users[i].id;
         mapdata['datecreated'] = mapdata['datecreated'].toDate().toString();
+        var resrating = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(users[i].id)
+            .collection('ratings')
+            .get();
+        if (resrating.docs.isNotEmpty) {
+          var ratings = resrating.docs;
+          double total = 0.0;
+          for (var i = 0; i < ratings.length; i++) {
+            total = total + ratings[i]['rating'];
+          }
+          mapdata['rating'] = (total / ratings.length).toStringAsFixed(1);
+        } else {
+          mapdata['rating'] = 0.0.toStringAsFixed(0);
+        }
         data.add(mapdata);
       }
       log(jsonEncode(data));
       usersList.assignAll(userFromJson(jsonEncode(data)));
       usersMasterList.assignAll(userFromJson(jsonEncode(data)));
+      usersList.sort(
+          (b, a) => double.parse(a.rating!).compareTo(double.parse(b.rating!)));
       Get.back();
     } catch (_) {
       Get.back();

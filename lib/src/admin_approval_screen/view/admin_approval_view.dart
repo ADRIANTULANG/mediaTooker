@@ -12,6 +12,7 @@ import 'package:sizer/sizer.dart';
 
 import '../../../config/app_colors.dart';
 import '../../../services/loading_dialog.dart';
+import '../dialog/admin_approval_remarks_dialog.dart';
 
 class AdminApprovalView extends GetView<AdminApprovalController> {
   const AdminApprovalView({super.key});
@@ -335,11 +336,22 @@ class AdminApprovalView extends GetView<AdminApprovalController> {
                                                         MaterialStatePropertyAll(
                                                             AppColors.light)),
                                                 onPressed: () {
-                                                  controller.rejectUsers(
-                                                      docid: controller
-                                                          .pendingUserList[
-                                                              index]
-                                                          .id);
+                                                  AdminApprovalRemarksDialog
+                                                      .showRemarksDialog(
+                                                          docid: controller
+                                                              .pendingUserList[
+                                                                  index]
+                                                              .id,
+                                                          email: controller
+                                                              .pendingUserList[
+                                                                  index]
+                                                              .email,
+                                                          name: controller
+                                                              .pendingUserList[
+                                                                  index]
+                                                              .name,
+                                                          controller:
+                                                              controller);
                                                 },
                                                 child: const Text("Reject")),
                                           ),

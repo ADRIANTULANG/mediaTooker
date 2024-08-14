@@ -596,6 +596,31 @@ class UsersProfileController extends GetxController {
     Get.back();
   }
 
+  bool isLink({required String text}) {
+    final RegExp urlPattern = RegExp(r'^(https?:\/\/)?' // protocol
+        r'((([a-zA-Z0-9$-_@.&+!*"(),]|(%[0-9a-fA-F][0-9a-fA-F]))+' // domain name
+        r'(\.[a-zA-Z]{2,4}))|localhost)' // domain name or localhost
+        r'(:\d+)?' // port number
+        r'(\/[a-zA-Z0-9$-_@.&+!*"(),%=]*)*' // path
+        r'(\?[a-zA-Z0-9$-_@.&+!*"(),%=]*)?' // query
+        r'(#.*)?$' // fragment
+        );
+    return urlPattern.hasMatch(text);
+  }
+
+  Future<void> visitBio({required String url}) async {
+    if (isLink(text: url)) {
+      if (!await launchUrl(Uri.parse(url))) {
+        throw Exception('Could not launch $url');
+      }
+    } else {
+      Get.snackbar("Message", "Bio is not a valid link.",
+          duration: const Duration(seconds: 3),
+          backgroundColor: AppColors.orange,
+          colorText: AppColors.light);
+    }
+  }
+
   @override
   void onInit() async {
     userid.value = await Get.arguments['userid'];

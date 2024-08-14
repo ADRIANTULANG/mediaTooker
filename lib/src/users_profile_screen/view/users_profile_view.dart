@@ -403,19 +403,25 @@ class UsersProfileView extends GetView<UsersProfileController> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: Obx(
-                                () => Text(
-                                  controller.bio.value.isEmpty &&
-                                          Get.find<StorageServices>()
-                                                  .storage
-                                                  .read('id') ==
-                                              controller.userid.value
-                                      ? "Describe yourself..."
-                                      : controller.bio.value,
-                                  maxLines: 6,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: AppFontSizes.regular),
+                              child: GestureDetector(
+                                onTap: () {
+                                  controller.visitBio(
+                                      url: controller.bio.value);
+                                },
+                                child: Obx(
+                                  () => Text(
+                                    controller.bio.value.isEmpty &&
+                                            Get.find<StorageServices>()
+                                                    .storage
+                                                    .read('id') ==
+                                                controller.userid.value
+                                        ? "Describe yourself..."
+                                        : controller.bio.value,
+                                    maxLines: 6,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: AppFontSizes.regular),
+                                  ),
                                 ),
                               ),
                             ),

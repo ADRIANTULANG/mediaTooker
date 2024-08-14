@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:mediatooker/model/user_model.dart';
 import 'package:mediatooker/services/loading_dialog.dart';
 import 'package:open_file_plus/open_file_plus.dart';
+import 'package:http/http.dart' as http;
 
 class AdminApprovalController extends GetxController {
   RxList<User> pendingUserList = <User>[].obs;
@@ -100,12 +101,18 @@ class AdminApprovalController extends GetxController {
         });
   }
 
-  rejectUsers({required String docid}) async {
+  rejectUsers(
+      {required String docid,
+      required String email,
+      required String name,
+      required String remarks}) async {
     try {
+      Get.back();
       LoadingDialog.showLoadingDialog();
       await FirebaseFirestore.instance.collection('users').doc(docid).update({
         "status": "Rejected",
       });
+      await senfEmailNotif(userEmail: email, userName: name, remarks: remarks);
       getPendingUsers();
       Get.back();
     } catch (_) {
@@ -182,6 +189,32 @@ class AdminApprovalController extends GetxController {
         }
       }
     }
+  }
+
+  senfEmailNotif({
+    required String userEmail,
+    required String userName,
+    required String remarks,
+  }) async {
+    var response = await http.post(
+        Uri.parse('https://api.emailjs.com/api/v1.0/email/send'),
+        headers: {
+          'origin': 'http://localhost',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'service_id': 'service_yjpqkrj',
+          'template_id': 'template_8apkm3i',
+          'user_id': 'lsszXDcX_0ZOe47Cr',
+          'template_params': {
+            'user_name': userName,
+            'user_email': userEmail,
+            'user_subject': 'MediaTooker Approval Result',
+            'user_message': "Your account is REJECTED.",
+            'remarks': remarks
+          }
+        }));
+    log(response.statusCode.toString());
   }
 
   @override
